@@ -1,0 +1,4855 @@
+asyncapi: "1.0.0"
+info:
+  title: "Conversation Entry Payload Schema"
+  version: "0.0.1"
+  description: "Conversation Entry Payload Schema for Salesforce Enhanced Channels"
+components:
+  schemas:
+    OrderExpiration:
+      description: "Optional order expiration used by chat payment surfaces."
+      type: "object"
+      properties:
+        description:
+          type: "string"
+          description: "Reason shown when the order expires."
+          maxLength: 120
+        timestamp:
+          format: "int64"
+          description: "UTC Unix timestamp in seconds when the order should expire (min now+300s)."
+          type: "integer"
+          example: 1759400000
+      required:
+      - "timestamp"
+    TextDecoration:
+      type: "string"
+      description: "Text decoration for text components."
+      enum:
+      - "Underline"
+      - "Strikethrough"
+    PaymentRequestShippingMethod:
+      description: "Payment Request Shipping Method"
+      allOf:
+      - $ref: "#/components/schemas/AbstractShippingMethod"
+      - type: "object"
+        properties:
+          identifier:
+            type: "string"
+            description: "The value defined by the client used to identify the shipping method."
+          amount:
+            type: "number"
+            format: "currency"
+            description: "The cost associated with this shipping method."
+          detail:
+            type: "string"
+            description: "Additional description"
+          label:
+            type: "string"
+            description: "A short description of the shipping method."
+        required:
+        - "amount"
+        - "detail"
+        - "identifier"
+        - "label"
+    CopyCodeAction:
+      description: "An action to copy a code"
+      allOf:
+      - $ref: "#/components/schemas/AbstractAction"
+      - type: "object"
+        properties:
+          code:
+            type: "string"
+        required:
+        - "code"
+    DocumentAsset:
+      description: "A document asset of a message."
+      allOf:
+      - $ref: "#/components/schemas/AbstractAsset"
+    AbstractInputSection:
+      description: "Common attributes for all input section types"
+      type: "object"
+      properties:
+        sectionType:
+          $ref: "#/components/schemas/InputSectionType"
+      required:
+      - "sectionType"
+      discriminator:
+        propertyName: "sectionType"
+    CitationClaim:
+      description: "Citation claim."
+      type: "object"
+      properties:
+        claimStartOffset:
+          type: "integer"
+          description: "Offset position in the message where the citation claim starts."
+        claimEndOffset:
+          type: "integer"
+          description: "Offset position in the message where the citation claim ends."
+      required:
+      - "claimStartOffset"
+      - "claimEndOffset"
+    OrderStatusUpdate:
+      description: "Order status information"
+      type: "object"
+      properties:
+        description:
+          type: "string"
+          description: "Description of the order status"
+          example: "Order has been shipped"
+        referenceId:
+          type: "string"
+          description: "Reference ID of the order"
+          example: "ORD-12345"
+        status:
+          $ref: "#/components/schemas/OrderStatus"
+      required:
+      - "referenceId"
+      - "status"
+    FormListPicker:
+      description: "Form as a list picker"
+      allOf:
+      - $ref: "#/components/schemas/AbstractForm"
+      - type: "object"
+        properties:
+          images:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/ImageAsset"
+          message:
+            $ref: "#/components/schemas/AbstractTitleItem"
+          reply:
+            $ref: "#/components/schemas/AbstractTitleItem"
+          sections:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/TitleOptionItemSection"
+        required:
+        - "sections"
+    StaticContentRichLink:
+      description: "Static content as a rich link"
+      allOf:
+      - $ref: "#/components/schemas/AbstractStaticContent"
+      - type: "object"
+        properties:
+          image:
+            $ref: "#/components/schemas/ImageAsset"
+          text:
+            $ref: "#/components/schemas/Text"
+          video:
+            $ref: "#/components/schemas/VideoAsset"
+          linkItem:
+            $ref: "#/components/schemas/TitleLinkItem"
+        required:
+        - "linkItem"
+    RoutingWorkType:
+      type: "string"
+      description: "work event type"
+      enum:
+      - "Assigned"
+      - "Accepted"
+      - "Cancelled"
+      - "Closed"
+      - "Declined"
+      - "TransferError"
+      - "Transferred"
+    FormResponseInputs:
+      description: "The input response values to a Form Message"
+      allOf:
+      - $ref: "#/components/schemas/AbstractFormResponse"
+      - type: "object"
+        properties:
+          formTitle:
+            $ref: "#/components/schemas/AbstractTitleItem"
+          inputValues:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/AbstractInputValue"
+        required:
+        - "inputValues"
+    TextInput:
+      description: "A text input"
+      allOf:
+      - $ref: "#/components/schemas/AbstractInput"
+      - type: "object"
+        properties:
+          regEx:
+            type: "string"
+          prefixText:
+            type: "string"
+          maximumCharacterCount:
+            type: "integer"
+          keyboardType:
+            $ref: "#/components/schemas/TextInputKeyboardType"
+          textInputType:
+            $ref: "#/components/schemas/TextInputType"
+          textContentType:
+            $ref: "#/components/schemas/TextInputContentType"
+          placeholder:
+            type: "string"
+    ChoicesListPicker:
+      description: "Choices as a list picker"
+      allOf:
+      - $ref: "#/components/schemas/AbstractChoices"
+      - type: "object"
+        properties:
+          images:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/ImageAsset"
+          title:
+            type: "string"
+          message:
+            $ref: "#/components/schemas/AbstractTitleItem"
+          reply:
+            $ref: "#/components/schemas/AbstractTitleItem"
+          optionItems:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/TitleOptionItem"
+        required:
+        - "title"
+        - "optionItems"
+    UrlValue:
+      description: "A url value"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          urlValue:
+            $ref: "#/components/schemas/Url"
+        required:
+        - "urlValue"
+    InputValueType:
+      type: "string"
+      enum:
+      - "SingleInputValue"
+      - "SelectedOptionsInputValue"
+    ExternalApplication:
+      description: "A link to an external application e.g imessage app."
+      allOf:
+      - $ref: "#/components/schemas/AbstractApplication"
+      - type: "object"
+        properties:
+          images:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/ImageAsset"
+          iconImageId:
+            $ref: "#/components/schemas/UniqueId"
+          message:
+            $ref: "#/components/schemas/AbstractTitleItem"
+          reply:
+            $ref: "#/components/schemas/AbstractTitleItem"
+          bundle:
+            type: "string"
+            description: "Apple imessage bundle id"
+          useLiveLayout:
+            type: "boolean"
+            description: "Apple imessage live layout"
+    AbstractExperienceTypeInput:
+      description: "Base type for all Experience Type inputs"
+      type: "object"
+      properties:
+        inputIdentifier:
+          $ref: "#/components/schemas/UniqueIdentifier"
+        inputType:
+          $ref: "#/components/schemas/ExperienceTypeInputType"
+      required:
+      - "inputType"
+      - "inputIdentifier"
+      discriminator:
+        propertyName: "inputType"
+    AbstractMessage:
+      description: "Base definition for all message types"
+      type: "object"
+      properties:
+        inReplyToMessageId:
+          $ref: "#/components/schemas/InReplyToMessageId"
+        customHandlingType:
+          $ref: "#/components/schemas/CustomHandlingType"
+        id:
+          $ref: "#/components/schemas/MessageId"
+        messageType:
+          $ref: "#/components/schemas/MessageType"
+        references:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/RecordReference"
+        contentCategory:
+          $ref: "#/components/schemas/MessageContentCategory"
+          description: "The category of the message"
+          example: "PromotionalOutreach"
+      required:
+      - "id"
+      - "messageType"
+      discriminator:
+        propertyName: "messageType"
+        mapping:
+          ChoicesResponseMessage: "#/components/schemas/ChoicesResponseMessage"
+          StaticContentMessage: "#/components/schemas/StaticContentMessage"
+          AuthenticationResponseMessage: "#/components/schemas/AuthenticationResponseMessage"
+          FormResponseMessage: "#/components/schemas/FormResponseMessage"
+          PaymentResponseMessage: "#/components/schemas/PaymentResponseMessage"
+          AuthenticationRequestMessage: "#/components/schemas/AuthenticationRequestMessage"
+          FormMessage: "#/components/schemas/FormMessage"
+          ChoicesMessage: "#/components/schemas/ChoicesMessage"
+          PaymentRequestMessage: "#/components/schemas/PaymentRequestMessage"
+          CommandMessage: "#/components/schemas/CommandMessage"
+    PaymentInitiation:
+      description: "Describes HOW to initiate the payment (e.g., UPI intent, Pix copy/QR, hosted payment link, or provider checkout)."
+      oneOf:
+      - description: "ExternalPaymentApp via UPI (India)"
+        properties:
+          mode:
+            enum:
+            - "ExternalPaymentApp"
+        required:
+        - "upi"
+      - description: "ExternalPaymentApp via Pix dynamic code (Brazil)"
+        properties:
+          mode:
+            enum:
+            - "ExternalPaymentApp"
+        required:
+        - "pix"
+      - description: "ExternalPaymentApp via Boleto (Brazil)"
+        properties:
+          mode:
+            enum:
+            - "ExternalPaymentApp"
+        required:
+        - "boleto"
+      - description: "Hosted payment link"
+        properties:
+          mode:
+            enum:
+            - "HostedLink"
+          gateway:
+            required:
+            - "providerName"
+            - "hostedLinkUrl"
+        required:
+        - "gateway"
+      - description: "Embedded provider checkout"
+        properties:
+          mode:
+            enum:
+            - "GatewayCheckout"
+          gateway:
+            required:
+            - "providerName"
+            - "configurationId"
+        required:
+        - "gateway"
+      type: "object"
+      properties:
+        mode:
+          $ref: "#/components/schemas/PaymentInitiationMode"
+        boleto:
+          $ref: "#/components/schemas/PaymentInitiationBoleto"
+        pix:
+          $ref: "#/components/schemas/PaymentInitiationPix"
+        gateway:
+          $ref: "#/components/schemas/PaymentInitiationGateway"
+        upi:
+          $ref: "#/components/schemas/PaymentInitiationUpi"
+      required:
+      - "mode"
+    ExperienceTypeChoicesResponseSelection:
+      description: "The selections to a choices message as Experience Type values"
+      allOf:
+      - $ref: "#/components/schemas/AbstractExperienceTypeChoicesResponse"
+      - type: "object"
+        properties:
+          selectedValues:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/ExperienceTypeValue"
+        required:
+        - "selectedValues"
+    FormResponseExperienceType:
+      description: "The result of handling a form response"
+      allOf:
+      - $ref: "#/components/schemas/AbstractFormResponse"
+      - type: "object"
+        properties:
+          experienceTypeResponse:
+            $ref: "#/components/schemas/AbstractExperienceTypeFormResponse"
+        required:
+        - "experienceTypeResponse"
+    TextType:
+      type: "string"
+      description: "The semantic type of the text, which influences its visual presentation."
+      enum:
+      - "Heading"
+      - "Subheading"
+      - "Body"
+      - "Caption"
+    AuthenticationStatus:
+      description: "Authentication status in the Authentication response."
+      type: "string"
+      enum:
+      - "Authenticated"
+      - "Error"
+      example: "Authenticated"
+    PostalAddress:
+      description: "Object representing a mailing address"
+      type: "object"
+      properties:
+        country:
+          type: "string"
+          description: "Country"
+        subLocality:
+          type: "string"
+          description: "Information associated with an address, defined at the city level"
+        countryCode:
+          type: "string"
+          description: "Two-letter ISO 3166 country code"
+          example: "US"
+        postalCode:
+          type: "string"
+        locality:
+          type: "string"
+          description: "City"
+        subAdministrativeArea:
+          type: "string"
+          description: "County or other region"
+        addressLines:
+          type: "array"
+          description: "Street, unit, etc"
+          items:
+            type: "string"
+        administrativeArea:
+          type: "string"
+          description: "State or Region"
+      required:
+      - "addressLines"
+      - "locality"
+      - "country"
+      - "postalCode"
+    SectionType:
+      type: "string"
+      enum:
+      - "SingleInputFlowSection"
+      - "MultiInputFlowSection"
+    Participant:
+      description: "A Participant"
+      type: "object"
+      properties:
+        role:
+          $ref: "#/components/schemas/ParticipantRole"
+          description: "The role of this participant"
+        appType:
+          $ref: "#/components/schemas/AppType"
+        subject:
+          type: "string"
+          description: "Subject identifier for this participant"
+          example: "005x00000000001"
+        clientIdentifier:
+          type: "string"
+          description: "The clientIdentifier for this participant"
+      required:
+      - "appType"
+      - "subject"
+      - "role"
+    OrderBeneficiary:
+      description: "Recipient for shipped physical goods (used by WhatsApp order_details compliance)."
+      type: "object"
+      properties:
+        name:
+          type: "string"
+          description: "Full name of the recipient."
+        phone:
+          type: "string"
+          description: "Optional contact phone in E.164 format."
+        address:
+          $ref: "#/components/schemas/PostalAddress"
+      required:
+      - "name"
+      - "address"
+    PaymentInitiationValue:
+      description: "An payment initiation value"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          paymentInitiation:
+            $ref: "#/components/schemas/PaymentInitiation"
+        required:
+        - "paymentInitiation"
+    Note:
+      description: "A note entry (for private whisper messages)"
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+      - type: "object"
+        properties:
+          abstractMessage:
+            $ref: "#/components/schemas/AbstractMessage"
+        required:
+        - "abstractMessage"
+    SwitchElement:
+      description: "Multi-case conditional element that renders content based on a value"
+      allOf:
+      - $ref: "#/components/schemas/AbstractElement"
+      - type: "object"
+        properties:
+          valueReference:
+            $ref: "#/components/schemas/DynamicReference"
+          default:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/SectionElement"
+          cases:
+            minItems: 1
+            description: "List of switch cases with their components"
+            type: "array"
+            items:
+              $ref: "#/components/schemas/SwitchCase"
+        required:
+        - "valueReference"
+        - "cases"
+    TitleImageItem:
+      allOf:
+      - $ref: "#/components/schemas/AbstractTitleItem"
+      - type: "object"
+        properties:
+          imageSubTitle:
+            type: "string"
+          imageId:
+            $ref: "#/components/schemas/UniqueId"
+        required:
+        - "imageId"
+    ChoicesQuickReplies:
+      description: "Choices with quick reply options"
+      allOf:
+      - $ref: "#/components/schemas/AbstractChoices"
+      - type: "object"
+        properties:
+          images:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/ImageAsset"
+          text:
+            $ref: "#/components/schemas/Text"
+          optionItems:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/TitleOptionItem"
+        required:
+        - "text"
+        - "optionItems"
+    CommandExperienceType:
+      description: "A unidirectional Experience Type Command Message"
+      allOf:
+      - $ref: "#/components/schemas/AbstractCommand"
+      - type: "object"
+        properties:
+          arguments:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/ExperienceTypeValue"
+        required:
+        - "arguments"
+    SectionId:
+      type: "string"
+    FormFlow:
+      description: "A form with dynamic wizard"
+      allOf:
+      - $ref: "#/components/schemas/AbstractForm"
+      - type: "object"
+        properties:
+          name:
+            type: "string"
+            description: "The generated form name in Core. example : SF_Managed_UUID"
+          assets:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/AbstractAsset"
+          message:
+            description: "Message bubble the user sees on their device"
+            $ref: "#/components/schemas/MessagePrompt"
+          sections:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/AbstractSection"
+        required:
+        - "name"
+        - "sections"
+    Link:
+      description: "A web link."
+      type: "object"
+      properties:
+        url:
+          type: "string"
+      required:
+      - "url"
+    AbstractEntry:
+      description: "Base definition for all entry types"
+      type: "object"
+      properties:
+        entryType:
+          $ref: "#/components/schemas/EntryType"
+        id:
+          $ref: "#/components/schemas/EntryId"
+      required:
+      - "id"
+      - "entryType"
+      discriminator:
+        propertyName: "entryType"
+    PaymentItemStatus:
+      description: "Status of a payment item"
+      type: "string"
+      enum:
+      - "FinalCost"
+      - "PendingCost"
+      example: "Final"
+    RoutingFailureType:
+      type: "string"
+      description: "How routing failed or succeeded"
+      enum:
+      - "None"
+      - "Unknown"
+      - "SubmissionError"
+      - "RoutingError"
+      - "Cancelled"
+    InputSectionType:
+      type: "string"
+      enum:
+      - "SingleInputSection"
+    AuthenticationResponseMessage:
+      description: "Authentication Response message"
+      allOf:
+      - $ref: "#/components/schemas/AbstractMessage"
+      - type: "object"
+        properties:
+          authenticationResponse:
+            $ref: "#/components/schemas/AbstractAuthenticationResponse"
+        required:
+        - "authenticationResponse"
+    LinkCitedReference:
+      description: "Link reference citation."
+      allOf:
+      - $ref: "#/components/schemas/AbstractCitedReference"
+      - type: "object"
+        properties:
+          link:
+            $ref: "#/components/schemas/Link"
+          recordId:
+            type: "string"
+          label:
+            type: "string"
+        required:
+        - "link"
+    NamedValue:
+      description: "A value with a unique name"
+      additionalProperties: false
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        value:
+          $ref: "#/components/schemas/AbstractValue"
+      required:
+      - "name"
+      - "value"
+    ErrorDetails:
+      description: "Error Details"
+      type: "object"
+      properties:
+        errorCode:
+          type: "string"
+        errorMessages:
+          type: "array"
+          minItems: 1
+          items:
+            type: "string"
+      required:
+      - "errorMessages"
+      - "errorCode"
+    PaymentLineItemValue:
+      description: "A payment line item value"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          lineItem:
+            $ref: "#/components/schemas/AbstractPaymentLineItem"
+        required:
+        - "lineItem"
+    AbstractCitedDetails:
+      description: "Base definition for all cited detail types"
+      type: "object"
+      properties:
+        citedDetailsType:
+          $ref: "#/components/schemas/CitedDetailsType"
+      required:
+      - "citedDetailsType"
+      discriminator:
+        propertyName: "citedDetailsType"
+        mapping:
+          InlineMetadata: "#/components/schemas/InlineMetadataCitedDetails"
+    OrderStatus:
+      description: "Order status"
+      type: "string"
+      enum:
+      - "Pending"
+      - "Processing"
+      - "PartiallyShipped"
+      - "Shipped"
+      - "Completed"
+      - "Canceled"
+      - "Failed"
+      - "Refunded"
+      - "Paid"
+      - "Delivered"
+      example: "Shipped"
+    StructuredValue:
+      description: "A value containing an arbitrary JSON object"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          value:
+            type: "object"
+            description: "A value representing an object"
+        required:
+        - "value"
+    FormResultType:
+      type: "string"
+      enum:
+      - "FormRecordsResult"
+      - "FormErrorResult"
+    DateValue:
+      description: "A date value as defined by rfc3339"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          dateValue:
+            type: "string"
+            format: "date"
+        required:
+        - "dateValue"
+    ActionsContentSection:
+      description: "A content section with actions"
+      allOf:
+      - $ref: "#/components/schemas/AbstractContentSection"
+      - type: "object"
+        properties:
+          actions:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/AbstractAction"
+        required:
+        - "actions"
+    OptionValue:
+      description: "A value that presents an option of a choice or a form"
+      additionalProperties: false
+      type: "object"
+      properties:
+        value:
+          $ref: "#/components/schemas/AbstractValue"
+        optionIdentifier:
+          $ref: "#/components/schemas/UniqueIdentifier"
+      required:
+      - "optionIdentifier"
+      - "value"
+    CalendarEventItemType:
+      type: "string"
+      description: "The type of a calendar event"
+      enum:
+      - "CalendarEventOptionsItem"
+    TitleInteractionItemType:
+      type: "string"
+      enum:
+      - "TitleLinkItem"
+      - "TitleOptionItem"
+    QueueRoutingConfigDetails:
+      description: "Queue routing based configuration details."
+      allOf:
+      - $ref: "#/components/schemas/RoutingConfigurationDetails"
+      - type: "object"
+        properties:
+          queueId:
+            type: "string"
+    AbstractCalendarEventItem:
+      description: "The base type for calendar events"
+      type: "object"
+      properties:
+        itemType:
+          $ref: "#/components/schemas/CalendarEventItemType"
+        location:
+          $ref: "#/components/schemas/LocationItem"
+        imageId:
+          $ref: "#/components/schemas/UniqueId"
+        title:
+          type: "string"
+        timezoneOffset:
+          type: "integer"
+        referenceId:
+          $ref: "#/components/schemas/UniqueId"
+      required:
+      - "itemType"
+      - "title"
+      discriminator:
+        propertyName: "itemType"
+    AttachmentUploadResultType:
+      type: "string"
+      enum:
+      - "CompletedAttachmentUploadResult"
+      - "PendingAttachmentUploadResult"
+      - "ErrorAttachmentUploadResult"
+    AuthenticationRequestMessageDefinition:
+      description: "References to a layout of authentication request"
+      allOf:
+      - $ref: "#/components/schemas/AbstractAuthenticationRequest"
+      - type: "object"
+        properties:
+          parameters:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/NamedValue"
+          messageDefinitionNameOrId:
+            $ref: "#/components/schemas/MessageDefinitionNameOrId"
+          targetLocale:
+            $ref: "#/components/schemas/Locale"
+            description: "The requested locale the message should be translated into"
+            example: "en-US"
+        required:
+        - "messageDefinitionNameOrId"
+    PaymentRequestPayment:
+      description: "Payment request"
+      allOf:
+      - $ref: "#/components/schemas/AbstractPaymentRequest"
+      - type: "object"
+        properties:
+          header:
+            $ref: "#/components/schemas/AbstractTitleItem"
+          images:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/ImageAsset"
+          payment:
+            $ref: "#/components/schemas/AbstractPaymentRequestDetails"
+          message:
+            $ref: "#/components/schemas/AbstractTitleItem"
+          reply:
+            $ref: "#/components/schemas/AbstractTitleItem"
+          footer:
+            $ref: "#/components/schemas/AbstractTitleItem"
+        required:
+        - "payment"
+    AbstractFormResult:
+      type: "object"
+      properties:
+        resultType:
+          $ref: "#/components/schemas/FormResultType"
+      required:
+      - "resultType"
+      discriminator:
+        propertyName: "resultType"
+    ExternalTemplateCategory:
+      type: "string"
+      description: "The categories of external templates"
+      enum:
+      - "Utility"
+      - "Marketing"
+      - "Authentication"
+    StaticContentExperienceType:
+      description: "A uni-directional Experience Type Message"
+      allOf:
+      - $ref: "#/components/schemas/AbstractStaticContent"
+      - type: "object"
+        properties:
+          message:
+            type: "string"
+          values:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/ExperienceTypeValue"
+        required:
+        - "values"
+    FormError:
+      type: "object"
+      properties:
+        errorMessage:
+          type: "string"
+          description: "A non localized message. Do not use for display in UI."
+        errorCode:
+          type: "string"
+          description: "A Salesforce API Error code. Can be used for displaying a localized error in UI"
+        errorType:
+          description: "The type of error to be used for displaying a localized error message in UI"
+          $ref: "#/components/schemas/FormErrorType"
+      required:
+      - "errorType"
+      - "errorMessage"
+    FormResponseMessage:
+      description: "MO Form response message"
+      allOf:
+      - $ref: "#/components/schemas/AbstractMessage"
+      - type: "object"
+        properties:
+          formResponse:
+            $ref: "#/components/schemas/AbstractFormResponse"
+        required:
+        - "formResponse"
+    DynamicReference:
+      description: "Reference to a dynamic value from screen field, ie 'SCREEN_ONE.field_a'"
+      type: "object"
+      properties:
+        screenId:
+          type: "string"
+          description: "Screen ID for cross-screen references"
+        path:
+          type: "string"
+          description: "Field name within the screen"
+      required:
+      - "screenId"
+      - "path"
+    TitleItemWithInteractions:
+      additionalProperties: false
+      type: "object"
+      properties:
+        titleItem:
+          $ref: "#/components/schemas/AbstractTitleItem"
+        interactionItems:
+          type: "array"
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/AbstractTitleInteractionItem"
+      required:
+      - "titleItem"
+      - "interactionItems"
+    SelectionDisplay:
+      type: "string"
+      description: "Display style for selection options"
+      enum:
+      - "Dropdown"
+      - "RadioButtons"
+      - "Checkboxes"
+      - "ChipsSelector"
+    ResultReference:
+      description: "A reference to a result."
+      additionalProperties: false
+      type: "object"
+      properties:
+        referenceId:
+          $ref: "#/components/schemas/UniqueId"
+      required:
+      - "referenceId"
+    TitleOptionItemSection:
+      description: "A form section with a list of TitleOptionItems."
+      additionalProperties: false
+      type: "object"
+      properties:
+        id:
+          $ref: "#/components/schemas/SectionId"
+          deprecated: true
+        title:
+          type: "string"
+        optionItems:
+          type: "array"
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/TitleOptionItem"
+        multipleSelection:
+          type: "boolean"
+      required:
+      - "title"
+      - "optionItems"
+    StaticContentCarousel:
+      description: "A carousel with optional links"
+      allOf:
+      - $ref: "#/components/schemas/AbstractStaticContent"
+      - type: "object"
+        properties:
+          items:
+            minItems: 1
+            description: "Items may not Include TitleOptionItem."
+            type: "array"
+            items:
+              $ref: "#/components/schemas/TitleItemWithLinks"
+          images:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/ImageAsset"
+        required:
+        - "items"
+    StaticContentMedia:
+      description: "Image or video media with optional links"
+      allOf:
+      - $ref: "#/components/schemas/AbstractStaticContent"
+      - type: "object"
+        properties:
+          mediaAsset:
+            $ref: "#/components/schemas/AbstractAsset"
+          linkItems:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/TitleLinkItem"
+        required:
+        - "mediaAsset"
+    EntryType:
+      type: "string"
+      description: "Enum listing unique identifiers types of entries."
+      enum:
+      - "Message"
+      - "MessageDeliveryFailed"
+      - "RoutingWorkResult"
+      - "ParticipantChanged"
+      - "RoutingResult"
+      - "Note"
+      - "FlagRaise"
+      - "FlagLower"
+      - "EndUserConsentUpdated"
+      - "SessionStatusChanged"
+      - "ConsultConversationInfo"
+      - "MessageUpdated"
+      - "SendTranscriptRequestReceived"
+      - "SessionContext"
+      - "SessionOwnerChanged"
+    StaticContentWebView:
+      description: "A single web page with parameters. One use case is a post-chat survey."
+      allOf:
+      - $ref: "#/components/schemas/AbstractStaticContent"
+      - type: "object"
+        properties:
+          displayType:
+            $ref: "#/components/schemas/WebViewDisplayType"
+          title:
+            $ref: "#/components/schemas/AbstractTitleItem"
+          parameters:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/NamedValue"
+          url:
+            $ref: "#/components/schemas/Url"
+        required:
+        - "url"
+    DoubleValue:
+      description: "A double value"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          doubleValue:
+            type: "number"
+            format: "double"
+        required:
+        - "doubleValue"
+    PaymentPixKeyType:
+      type: "string"
+      description: "Brazil Pix key type."
+      enum:
+      - "Cpf"
+      - "Cnpj"
+      - "Email"
+      - "Phone"
+      - "Evp"
+    SingleInputSection:
+      description: "A form section with a single input"
+      allOf:
+      - $ref: "#/components/schemas/AbstractInputSection"
+      - type: "object"
+        properties:
+          nextSectionInputId:
+            $ref: "#/components/schemas/InputId"
+          input:
+            $ref: "#/components/schemas/AbstractInput"
+          submitForm:
+            type: "boolean"
+        required:
+        - "input"
+    TextContent:
+      description: "Text content"
+      allOf:
+      - $ref: "#/components/schemas/AbstractContent"
+      - type: "object"
+        properties:
+          text:
+            type: "string"
+        required:
+        - "text"
+    SelectionSection:
+      description: "The selected options of a section"
+      additionalProperties: false
+      type: "object"
+      properties:
+        selectedOptions:
+          type: "array"
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/SelectedOption"
+        sectionId:
+          $ref: "#/components/schemas/SectionId"
+          deprecated: true
+      required:
+      - "selectedOptions"
+    VoiceCallAction:
+      description: "An action to make a voice call"
+      allOf:
+      - $ref: "#/components/schemas/AbstractAction"
+    OrderItemCommerceAttributes:
+      type: "object"
+      description: "Optional commerce & compliance metadata."
+      properties:
+        retailerId:
+          type: "string"
+          description: "Product retailer id."
+        category:
+          $ref: "#/components/schemas/OrderItemCategory"
+        importer:
+          $ref: "#/components/schemas/OrderItemImporter"
+          description: "on WhatsApp, include when NOT using catalogId (India compliance)."
+    StaticContentMessage:
+      description: "Non interactive MT or MO message with static content"
+      allOf:
+      - $ref: "#/components/schemas/AbstractMessage"
+      - type: "object"
+        properties:
+          staticContent:
+            $ref: "#/components/schemas/AbstractStaticContent"
+        required:
+        - "staticContent"
+    StaticContentLinks:
+      description: "A list of web links."
+      allOf:
+      - $ref: "#/components/schemas/AbstractStaticContent"
+      - type: "object"
+        properties:
+          links:
+            minItems: 1
+            maxItems: 1
+            type: "array"
+            items:
+              $ref: "#/components/schemas/Link"
+        required:
+        - "links"
+    ChoicesTimePicker:
+      description: "Choices as a time picker"
+      allOf:
+      - $ref: "#/components/schemas/AbstractChoices"
+      - type: "object"
+        properties:
+          calendarEvent:
+            $ref: "#/components/schemas/CalendarEventOptionsItem"
+          images:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/ImageAsset"
+          message:
+            $ref: "#/components/schemas/AbstractTitleItem"
+          reply:
+            $ref: "#/components/schemas/AbstractTitleItem"
+        required:
+        - "calendarEvent"
+    DateTimePickerInput:
+      description: "An input to pick a date and time"
+      allOf:
+      - $ref: "#/components/schemas/AbstractInput"
+      - type: "object"
+        properties:
+          startDateTime:
+            format: "date-time"
+            description: "Start date and time value"
+            type: "string"
+            example: "2021-02-25 14:00:00"
+          dateTimeFormat:
+            type: "string"
+            description: "Format for the date-time value"
+            example: "MM/DD/YYYY hh:mm:ss"
+          maximumDateTime:
+            format: "date-time"
+            description: "Maximum date time value possible"
+            type: "string"
+            example: "2021-02-25 14:00:00"
+          minimumDateTime:
+            format: "date-time"
+            description: "Minimum date time value possible"
+            type: "string"
+            example: "2021-02-25 14:00:00"
+    AbstractPaymentResponse:
+      type: "object"
+      properties:
+        formatType:
+          $ref: "#/components/schemas/FormatType"
+      required:
+      - "formatType"
+      discriminator:
+        propertyName: "formatType"
+        mapping:
+          Result: "#/components/schemas/PaymentResult"
+    MultiInputFlowSection:
+      description: "A form section with multiple input fields and optional non input components."
+      allOf:
+      - $ref: "#/components/schemas/AbstractSection"
+      - type: "object"
+        properties:
+          components:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/SectionElement"
+        required:
+        - "components"
+    Attachment:
+      description: "A file sent as an attachment with a message."
+      additionalProperties: false
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        attachmentUploadResult:
+          description: "Results of attachment uploads for MO messages."
+          $ref: "#/components/schemas/AbstractAttachmentUploadResult"
+        id:
+          $ref: "#/components/schemas/UniqueId"
+        mimeType:
+          $ref: "#/components/schemas/MimeType"
+        url:
+          $ref: "#/components/schemas/Url"
+        referenceId:
+          $ref: "#/components/schemas/UniqueId"
+      required:
+      - "id"
+      - "name"
+      - "mimeType"
+      - "url"
+    FormExperienceType:
+      description: "An Experience Type Form Message"
+      allOf:
+      - $ref: "#/components/schemas/AbstractForm"
+      - type: "object"
+        properties:
+          message:
+            type: "string"
+          confirm:
+            $ref: "#/components/schemas/ConfirmSection"
+          inputs:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/AbstractExperienceTypeInput"
+        required:
+        - "inputs"
+    IntelligenceSignalServiceType:
+      type: "string"
+      description: "Enum listing service types for the Intelligence Signal."
+      enum:
+      - "AmazonConnectContactLens"
+      - "CxoneAgentAssistService"
+      - "VonageConversationalInsights"
+    CitedDetailsType:
+      type: "string"
+      description: "The types of cited details."
+      enum:
+      - "InlineMetadata"
+    MessageDefinitionNameOrId:
+      type: "string"
+      description: "A reference to a message definition by unique name or id"
+    RoutingWorkResult:
+      description: "Result of routing work"
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+      - type: "object"
+        properties:
+          queueId:
+            type: "string"
+            description: "Queue assigned work"
+          errorMessages:
+            type: "array"
+            description: "Error occurred while routing the work"
+            items:
+              type: "string"
+          workTargetId:
+            type: "string"
+            description: "Routing target associated with this record (e.g.: MessagingSession)"
+          agentSessionId:
+            type: "string"
+            description: "Assigned Agent Id"
+          routingType:
+            description: "Routing Type"
+            $ref: "#/components/schemas/RoutingType"
+          workType:
+            description: "Work event type"
+            $ref: "#/components/schemas/RoutingWorkType"
+          botId:
+            type: "string"
+            description: "Bot assigned work"
+          agentGroupIds:
+            type: "array"
+            description: "GroupId for the assigned agent"
+            items:
+              type: "string"
+          workId:
+            type: "string"
+            description: "Work SFDC record ID"
+        required:
+        - "conversationId"
+        - "workId"
+        - "workTargetId"
+        - "workType"
+        - "errorMessages"
+    PaymentRequestMessage:
+      description: "Payment Request message"
+      allOf:
+      - $ref: "#/components/schemas/AbstractMessage"
+      - type: "object"
+        properties:
+          paymentRequest:
+            $ref: "#/components/schemas/AbstractPaymentRequest"
+        required:
+        - "paymentRequest"
+    RoutingResult:
+      description: "Result of conversation routing if either successful or failure"
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+      - type: "object"
+        properties:
+          recordId:
+            type: "string"
+            description: "Routed record ID from omni event - if successful"
+          errorMessages:
+            type: "array"
+            description: "Any messages that occurred during routing - can be errors from before/after omni or status messages depending on the failureType"
+            items:
+              type: "string"
+          pendingServiceRoutingId:
+            type: "string"
+            description: "PSR ID from omni event - if successful"
+          skipRouterCPRemovalIfNoRoutingFailures:
+            type: "boolean"
+            description: "Indicates whether the router CP removal should be skipped if there are no routing failures"
+          workOwnerId:
+            type: "string"
+            description: "The SFDC Id of user who is requesting cancellation"
+          routingType:
+            description: "Routing Type"
+            $ref: "#/components/schemas/RoutingType"
+          estimatedWaitTime:
+            description: "Estimated Wait Time value and whether this Estimated Wait Time is requested"
+            $ref: "#/components/schemas/EstimatedWaitTime"
+          failureReason:
+            type: "string"
+            description: "Indicates the specific reason for the failure"
+          failureType:
+            description: "Indicates what type of failure occurred"
+            $ref: "#/components/schemas/RoutingFailureType"
+          isExternallyRouted:
+            type: "boolean"
+            description: "Indicates whether routing is initiated from an external partner system or not"
+          cancelReason:
+            description: "Reason for cancelling the conference routing"
+            $ref: "#/components/schemas/CancelReason"
+          routingConfigurationDetails:
+            description: "Routing Configuration Detail, including routing method and details associated with the routing method."
+            $ref: "#/components/schemas/RoutingConfigurationDetails"
+        required:
+        - "routingType"
+        - "failureType"
+        - "errorMessages"
+    AbstractLocationItem:
+      description: "The base type for locations."
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        itemType:
+          $ref: "#/components/schemas/LocationItemType"
+        radius:
+          type: "number"
+          format: "double"
+          description: "The radius of the location in meters."
+        referenceId:
+          $ref: "#/components/schemas/UniqueId"
+        latitude:
+          type: "number"
+          format: "double"
+          example: 37.7725
+        longitude:
+          type: "number"
+          format: "double"
+          example: -122.4311
+      required:
+      - "itemType"
+      - "name"
+      discriminator:
+        propertyName: "itemType"
+    TimingIntervalUnit:
+      description: "Interval Unit for Timing"
+      type: "string"
+      enum:
+      - "Year"
+      - "Month"
+      - "Day"
+      - "Hour"
+      - "Minute"
+      example: "Year"
+    RoutingContext:
+      description: "Internal context about the routing request (channelData field on Omni events should be deserialized against this)"
+      type: "object"
+      properties:
+        eventId:
+          type: "string"
+          description: "The UUID of the originating ConversationRoutingRequestedEvent event"
+        routerParticipantSubject:
+          type: "string"
+          description: "The router participant tied to routing"
+        routingType:
+          type: "string"
+          $ref: "#/components/schemas/RoutingType"
+        conversationId:
+          type: "string"
+          description: "The conversation associated with the work being routed by Omni"
+      required:
+      - "eventId"
+      - "conversationId"
+      - "routingType"
+    LocationItemType:
+      type: "string"
+      description: "The type of a location item."
+      enum:
+      - "LocationItem"
+    OrderContextValue:
+      description: "An order context value"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          orderContext:
+            $ref: "#/components/schemas/OrderContext"
+        required:
+        - "orderContext"
+    SelectNavigationInput:
+      description: "A select input that allow navigation to a specific section"
+      allOf:
+      - $ref: "#/components/schemas/AbstractInput"
+      - type: "object"
+        properties:
+          optionItems:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/NavigationOptionItem"
+        required:
+        - "optionItems"
+    LocationValue:
+      description: "A location value"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          location:
+            $ref: "#/components/schemas/AbstractLocationItem"
+        required:
+        - "location"
+    AbstractAction:
+      description: "The base type of an action"
+      type: "object"
+      properties:
+        actionType:
+          $ref: "#/components/schemas/ActionType"
+        label:
+          type: "string"
+      required:
+      - "actionType"
+      - "label"
+      discriminator:
+        propertyName: "actionType"
+    MessageType:
+      description: "The semantic type of a message. What a message does."
+      type: "string"
+      enum:
+      - "ChoicesMessage"
+      - "ChoicesResponseMessage"
+      - "FormMessage"
+      - "FormResponseMessage"
+      - "StaticContentMessage"
+      - "AuthenticationRequestMessage"
+      - "AuthenticationResponseMessage"
+      - "PaymentRequestMessage"
+      - "PaymentResponseMessage"
+      - "CommandMessage"
+      example: "StaticContentMessage"
+    ParticipantRole:
+      type: "string"
+      enum:
+      - "EndUser"
+      - "Chatbot"
+      - "Agent"
+      - "Supervisor"
+      - "System"
+      - "Router"
+    ChoicesResponseMessage:
+      description: "MO response message to a choices message"
+      allOf:
+      - $ref: "#/components/schemas/AbstractMessage"
+      - type: "object"
+        properties:
+          choicesResponse:
+            $ref: "#/components/schemas/AbstractChoicesResponse"
+        required:
+        - "choicesResponse"
+    LinkTemplateSection:
+      description: "Link section of the template."
+      allOf:
+      - $ref: "#/components/schemas/AbstractTemplateSection"
+      - type: "object"
+        properties:
+          parameters:
+            minItems: 1
+            description: "List of one parameter with their type and value defined"
+            type: "array"
+            items:
+              $ref: "#/components/schemas/AbstractValue"
+        required:
+        - "parameters"
+    UniqueId:
+      type: "string"
+      description: "A UUID that identifies objects or items uniquely per message instance"
+      example: "cbd4e3fe-f210-43b8-a4b7-dd77e39ee5e1"
+    OAuthAuthorizationRequestType:
+      description: "Type of OAuth Authorization Request"
+      type: "string"
+      enum:
+      - "OAuthCodeDelegatedExchangeAuthorizationRequest"
+      example: "OAuthCodeDelegatedExchangeAuthorizationRequest"
+    ExperienceTypeFormResponseType:
+      type: "string"
+      description: "The type of an Experience Type form response"
+      enum:
+      - "ExperienceTypeFormResponseValues"
+    PaymentRequestDetailsType:
+      description: "The semantic type of a payment request details."
+      type: "string"
+      enum:
+      - "PaymentRequestDetails"
+      example: "PaymentRequestDetails"
+    DateTimeValue:
+      description: "A date time value as defined by rfc3339"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          dateTimeValue:
+            type: "string"
+            format: "date-time"
+        required:
+        - "dateTimeValue"
+    FlagRaise:
+      description: "A Flag Raise entry"
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+      - type: "object"
+        properties:
+          abstractMessage:
+            $ref: "#/components/schemas/AbstractMessage"
+    ListValue:
+      description: "A composite value that contains a list of other values"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          items:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/AbstractValue"
+        required:
+        - "items"
+    TimeSlotOptionItem:
+      description: "A time slot option of a choice or form message."
+      allOf:
+      - $ref: "#/components/schemas/AbstractTimeSlotItem"
+      - type: "object"
+        properties:
+          optionIdentifier:
+            $ref: "#/components/schemas/UniqueIdentifier"
+        required:
+        - "optionIdentifier"
+    HeaderTemplateSection:
+      description: "Header section of the template."
+      allOf:
+      - $ref: "#/components/schemas/AbstractTemplateSection"
+      - type: "object"
+        properties:
+          parameters:
+            minItems: 1
+            description: "List of one parameter with their type and value defined"
+            type: "array"
+            items:
+              $ref: "#/components/schemas/AbstractValue"
+        required:
+        - "parameters"
+    NavigationOptionItem:
+      description: "A single select input that navigates to another input field"
+      type: "object"
+      properties:
+        nextInputId:
+          $ref: "#/components/schemas/InputId"
+        optionItem:
+          $ref: "#/components/schemas/TitleOptionItem"
+      required:
+      - "optionItem"
+      - "nextInputId"
+    TitleOptionItem:
+      allOf:
+      - $ref: "#/components/schemas/AbstractTitleInteractionItem"
+      - type: "object"
+        properties:
+          optionIdentifier:
+            $ref: "#/components/schemas/UniqueIdentifier"
+        required:
+        - "optionIdentifier"
+      - type: "object"
+        properties:
+          optionId:
+            $ref: "#/components/schemas/UniqueId"
+            deprecated: true
+    StaticContentText:
+      description: "Static text content"
+      allOf:
+      - $ref: "#/components/schemas/AbstractStaticContent"
+      - type: "object"
+        properties:
+          text:
+            $ref: "#/components/schemas/Text"
+        required:
+        - "text"
+      - type: "object"
+        properties:
+          citationContent:
+            $ref: "#/components/schemas/CitationContent"
+    ApplicationType:
+      type: "string"
+      description: "The type of an application"
+      enum:
+      - "ExternalApplication"
+    SwitchCase:
+      description: "A single case in a switch statement with its value and components"
+      type: "object"
+      properties:
+        case:
+          type: "string"
+          description: "The case value to match against (e.g., 'basic', 'standard', 'full')"
+        components:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/SectionElement"
+      required:
+      - "case"
+      - "components"
+    PaymentInitiationGateway:
+      description: "Configuration for provider checkout or hosted link."
+      additionalProperties: false
+      type: "object"
+      properties:
+        configurationId:
+          type: "string"
+          description: "Internal config/profile id (for GatewayCheckout)."
+        providerParameters:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/NamedValue"
+        paymentConfigurationName:
+          type: "string"
+          description: "WhatsApp PG configuration_name (if using WA payment_gateway)."
+        methodHints:
+          type: "array"
+          description: "Optional, provider-agnostic hint to restrict visible methods on the checkout/link."
+          items:
+            $ref: "#/components/schemas/PaymentMethodHint"
+        providerName:
+          type: "string"
+          description: "Payment provider/gateway"
+          example: "Razorpay"
+        hostedLinkUrl:
+          $ref: "#/components/schemas/Url"
+          description: "Provider-hosted payment link (HostedLink)."
+    AbstractFormResponse:
+      type: "object"
+      properties:
+        formatType:
+          $ref: "#/components/schemas/FormatType"
+      required:
+      - "formatType"
+      discriminator:
+        propertyName: "formatType"
+        mapping:
+          Selections: "#/components/schemas/FormResponseSelections"
+          ExperienceType: "#/components/schemas/FormResponseExperienceType"
+          Inputs: "#/components/schemas/FormResponseInputs"
+          References: "#/components/schemas/FormResponseReferences"
+          Result: "#/components/schemas/FormResponseResult"
+    FooterContentSection:
+      description: "A footer content section"
+      allOf:
+      - $ref: "#/components/schemas/AbstractContentSection"
+      - type: "object"
+        properties:
+          footerContents:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/AbstractContent"
+        required:
+        - "footerContents"
+    AbstractStaticContent:
+      type: "object"
+      properties:
+        formatType:
+          $ref: "#/components/schemas/FormatType"
+      required:
+      - "formatType"
+      discriminator:
+        propertyName: "formatType"
+        mapping:
+          Carousel: "#/components/schemas/StaticContentCarousel"
+          ExternalTemplate: "#/components/schemas/StaticContentExternalTemplate"
+          CancelAction: "#/components/schemas/StaticContentCancelActionResponse"
+          Media: "#/components/schemas/StaticContentMedia"
+          ExtendedText: "#/components/schemas/StaticContentExtendedText"
+          Text: "#/components/schemas/StaticContentText"
+          RichLink: "#/components/schemas/StaticContentRichLink"
+          Attachments: "#/components/schemas/StaticContentAttachments"
+          MessageDefinition: "#/components/schemas/StaticContentMessageDefinition"
+          ExperienceType: "#/components/schemas/StaticContentExperienceType"
+          Links: "#/components/schemas/StaticContentLinks"
+          Buttons: "#/components/schemas/StaticContentButtons"
+          WebView: "#/components/schemas/StaticContentWebView"
+          ErrorMessage: "#/components/schemas/StaticContentErrorMessage"
+          Application: "#/components/schemas/StaticContentApplication"
+    HeaderContentSection:
+      description: "A header content section"
+      allOf:
+      - $ref: "#/components/schemas/AbstractContentSection"
+      - type: "object"
+        properties:
+          headerContents:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/AbstractContent"
+        required:
+        - "headerContents"
+    AbstractForm:
+      type: "object"
+      properties:
+        formatType:
+          $ref: "#/components/schemas/FormatType"
+      required:
+      - "formatType"
+      discriminator:
+        propertyName: "formatType"
+        mapping:
+          MessageDefinition: "#/components/schemas/FormMessageDefinition"
+          ExperienceType: "#/components/schemas/FormExperienceType"
+          Inputs: "#/components/schemas/FormInputs"
+          ListPicker: "#/components/schemas/FormListPicker"
+          Flow: "#/components/schemas/FormFlow"
+    PromotionalOfferTemplateSection:
+      description: "Promo Code section of the template"
+      allOf:
+      - $ref: "#/components/schemas/AbstractTemplateSection"
+      - type: "object"
+        properties:
+          parameters:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/AbstractValue"
+              description: "List of one parameter with their type and value defined"
+        required:
+        - "parameters"
+    ExperienceTypeChoicesResponseType:
+      type: "string"
+      description: "The type of an Experience Type choices response"
+      enum:
+      - "ExperienceTypeChoicesResponseSelection"
+    FormRecordsResult:
+      description: "The resulting records of handling a form response"
+      allOf:
+      - $ref: "#/components/schemas/AbstractFormResult"
+      - type: "object"
+        properties:
+          records:
+            minItems: 1
+            maxItems: 1
+            type: "array"
+            items:
+              $ref: "#/components/schemas/RecordResult"
+        required:
+        - "records"
+    AbstractPaymentLineItem:
+      type: "object"
+      properties:
+        lineItemType:
+          $ref: "#/components/schemas/PaymentLineItemType"
+      required:
+      - "lineItemType"
+      discriminator:
+        propertyName: "lineItemType"
+        mapping:
+          PaymentRequestLineItem: "#/components/schemas/PaymentRequestLineItem"
+    NavigateFormAction:
+      description: "A navigation action"
+      allOf:
+      - $ref: "#/components/schemas/AbstractFormAction"
+      - type: "object"
+        properties:
+          nextSectionId:
+            $ref: "#/components/schemas/SectionId"
+        required:
+        - "nextSectionId"
+    TextInputKeyboardType:
+      type: "string"
+      enum:
+      - "Default"
+      - "AsciiCapable"
+      - "NumbersAndPunctuation"
+      - "URL"
+      - "NumberPad"
+      - "PhonePad"
+      - "NamePhonePad"
+      - "EmailAddress"
+      - "DecimalPad"
+      - "Twitter"
+      - "WebSearch"
+    LocationItem:
+      description: "A location item."
+      allOf:
+      - $ref: "#/components/schemas/AbstractLocationItem"
+    FormIntroScreenType:
+      type: "string"
+      enum:
+      - "FormSplashScreen"
+    AbstractContent:
+      description: "The base type of a content"
+      type: "object"
+      properties:
+        contentType:
+          $ref: "#/components/schemas/ContentType"
+      required:
+      - "contentType"
+      discriminator:
+        propertyName: "contentType"
+    StaticContentApplication:
+      description: "A link out to an application"
+      allOf:
+      - $ref: "#/components/schemas/AbstractStaticContent"
+      - type: "object"
+        properties:
+          application:
+            $ref: "#/components/schemas/AbstractApplication"
+        required:
+        - "application"
+    ExperienceTypeFormResponseValues:
+      description: "The values to a form message as Experience Type values"
+      allOf:
+      - $ref: "#/components/schemas/AbstractExperienceTypeFormResponse"
+      - type: "object"
+        properties:
+          inputValues:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/ExperienceTypeValue"
+        required:
+        - "inputValues"
+    StaticContentCancelActionResponse:
+      allOf:
+      - $ref: "#/components/schemas/AbstractStaticContent"
+      - type: "object"
+        properties:
+          sequenceId:
+            type: "integer"
+            description: "Sequence number of the message"
+          timestamp:
+            type: "integer"
+            format: "int64"
+            description: "Epoch time in milliseconds"
+        required:
+        - "timestamp"
+        - "sequenceId"
+    ExperienceTypeValue:
+      description: "An Experience Type value"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          type:
+            $ref: "#/components/schemas/ExperienceTypeRef"
+            description: "Target Type"
+          property:
+            type: "string"
+            description: "Target Property"
+          value:
+            description: "A value - this can be Any type as per OAS https://swagger.io/docs/specification/data-models/data-types/#any"
+            example: "a free form string or an object or an array"
+        required:
+        - "type"
+        - "value"
+    AuthenticationResponseEncryptedOAuthToken:
+      description: "Encrypted OAuth Token Response"
+      allOf:
+      - $ref: "#/components/schemas/AbstractAuthenticationResponse"
+      - type: "object"
+        properties:
+          encryptedAccessToken:
+            type: "string"
+          authenticationStatus:
+            $ref: "#/components/schemas/AuthenticationStatus"
+          errors:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/AuthenticationError"
+        required:
+        - "authenticationStatus"
+    TextReplyAction:
+      description: "An action that sends a text reply"
+      allOf:
+      - $ref: "#/components/schemas/AbstractAction"
+      - type: "object"
+        properties:
+          text:
+            type: "string"
+        required:
+        - "text"
+    DeferredTiming:
+      description: "Deferred Timing"
+      allOf:
+      - $ref: "#/components/schemas/AbstractTiming"
+      - type: "object"
+        properties:
+          deferredDate:
+            type: "string"
+            format: "date"
+        required:
+        - "deferredDate"
+    MessageDeliveryFailed:
+      description: "A message could not be delivered"
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+      - type: "object"
+        properties:
+          recipient:
+            $ref: "#/components/schemas/Participant"
+          errorMessage:
+            type: "string"
+          failedConversationEntryIdentifier:
+            type: "string"
+          errorCode:
+            type: "string"
+        required:
+        - "recipient"
+        - "errorCode"
+    FontWeight:
+      type: "string"
+      description: "Font weight for text components."
+      enum:
+      - "Bold"
+      - "Normal"
+    SendTranscriptRequestReceived:
+      description: "Entry to indicate that send transcript request has been received."
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+      - type: "object"
+        properties:
+          sendTranscriptRequestId:
+            type: "string"
+            description: "Id of the send transcript request record created"
+          requester:
+            description: "Participant who requested the transcript. Could be agent or endUser"
+            $ref: "#/components/schemas/Participant"
+          recipientEmailAddress:
+            type: "string"
+            description: "Email Address to which transcript will be sent"
+          requesterDisplayName:
+            type: "string"
+            description: "Display name of the requester. Could be agent or endUser"
+          endUserSubject:
+            type: "string"
+            description: "Subject of the endUser for whom transcript was requested for"
+        required:
+        - "recipientEmailAddress"
+        - "sendTranscriptRequestId"
+        - "requesterDisplayName"
+        - "requester"
+        - "endUserSubject"
+    AuthenticationResult:
+      type: "object"
+      properties:
+        recordReferenceId:
+          $ref: "#/components/schemas/UniqueId"
+        authenticationStatus:
+          $ref: "#/components/schemas/AuthenticationStatus"
+        errors:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/AuthenticationError"
+      required:
+      - "authenticationStatus"
+    ImageReferenceValue:
+      description: "An image reference value"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          imageReferenceId:
+            $ref: "#/components/schemas/UniqueId"
+        required:
+        - "imageReferenceId"
+    ParticipantChangedClientMenuMetadata:
+      type: "object"
+      description: "A dialog that client displays in the menu"
+      properties:
+        menuOptions:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              title:
+                type: "string"
+              optionIdentifier:
+                type: "string"
+          required:
+          - "optionIdentifier"
+          - "title"
+    ChoicesDisplayableOptions:
+      description: "Choices with displayable options"
+      allOf:
+      - $ref: "#/components/schemas/AbstractChoices"
+      - type: "object"
+        properties:
+          title:
+            type: "string"
+          displayType:
+            type: "string"
+            enum:
+            - "Menu"
+            - "Buttons"
+          optionItems:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/DisplayableOption"
+        required:
+        - "title"
+        - "displayType"
+        - "optionItems"
+    FormErrorType:
+      type: "string"
+      enum:
+      - "InvalidFormResponse"
+      - "FormRequestExpired"
+      - "ApiResultErrorCode"
+      - "InternalServerError"
+    AbstractCitedReference:
+      description: "Base definition for all cited reference types"
+      type: "object"
+      properties:
+        citedReferenceType:
+          $ref: "#/components/schemas/CitedReferenceType"
+      required:
+      - "citedReferenceType"
+      discriminator:
+        propertyName: "citedReferenceType"
+        mapping:
+          Link: "#/components/schemas/LinkCitedReference"
+    ExperienceTypeValueInput:
+      description: "An Experience Type input"
+      allOf:
+      - $ref: "#/components/schemas/AbstractExperienceTypeInput"
+      - type: "object"
+        properties:
+          targetType:
+            $ref: "#/components/schemas/ExperienceTypeRef"
+          targetProperty:
+            type: "string"
+          defaultValue:
+            description: "A value - this can be Any type as per OAS https://swagger.io/docs/specification/data-models/data-types/#any"
+            example: "a free form string or an object or an array"
+        required:
+        - "targetType"
+    AbstractTitleInteractionItem:
+      type: "object"
+      properties:
+        titleItem:
+          $ref: "#/components/schemas/AbstractTitleItem"
+        itemType:
+          $ref: "#/components/schemas/TitleInteractionItemType"
+      required:
+      - "itemType"
+      - "titleItem"
+      discriminator:
+        propertyName: "itemType"
+    StaticTextElement:
+      description: "A unified static text component that supports multiple text types - always used for Display"
+      allOf:
+      - $ref: "#/components/schemas/AbstractElement"
+      - type: "object"
+        properties:
+          textType:
+            $ref: "#/components/schemas/TextType"
+          text:
+            type: "string"
+          fontStyle:
+            $ref: "#/components/schemas/FontStyle"
+          contentType:
+            $ref: "#/components/schemas/TextContentType"
+          fontWeight:
+            $ref: "#/components/schemas/FontWeight"
+          textDecorations:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/TextDecoration"
+        required:
+        - "textType"
+        - "text"
+    SessionOwnerType:
+      type: "string"
+      description: "Owner type of the session"
+      enum:
+      - "Agent"
+      - "Bot"
+      - "Queue"
+    Citation:
+      description: "Citation referencing the source material a portion of the message was generated from."
+      type: "object"
+      properties:
+        citedReference:
+          $ref: "#/components/schemas/AbstractCitedReference"
+        citedDetails:
+          $ref: "#/components/schemas/AbstractCitedDetails"
+      required:
+      - "citedReference"
+    AbstractTitleItem:
+      type: "object"
+      properties:
+        secondarySubTitle:
+          type: "string"
+        itemType:
+          $ref: "#/components/schemas/TitleItemType"
+        title:
+          type: "string"
+        subTitle:
+          type: "string"
+        tertiarySubTitle:
+          type: "string"
+        referenceId:
+          $ref: "#/components/schemas/UniqueId"
+      required:
+      - "itemType"
+      - "title"
+      discriminator:
+        propertyName: "itemType"
+    AbstractConditionExpression:
+      description: "Expression for evaluating conditions. Always returning boolean"
+      type: "object"
+      properties:
+        type:
+          $ref: "#/components/schemas/ConditionExpressionType"
+      required:
+      - "type"
+      discriminator:
+        propertyName: "type"
+        mapping:
+          ComparisonCondition: "#/components/schemas/ComparisonCondition"
+          NotCondition: "#/components/schemas/NotCondition"
+          LogicalCondition: "#/components/schemas/LogicalCondition"
+    SectionElement:
+      type: "object"
+      anyOf:
+      - required:
+        - "input"
+      - required:
+        - "nonInput"
+      properties:
+        input:
+          $ref: "#/components/schemas/AbstractInput"
+        nonInput:
+          $ref: "#/components/schemas/AbstractElement"
+        visible:
+          description: "Controls visibility of this element. Supports static or dynamic values `screen_a.fld_id_visible` or even boolean expression: `screen_a.fld_a == \"a\"`"
+          $ref: "#/components/schemas/DynamicBooleanCondition"
+    IntegerValue:
+      description: "An integer value"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          integerValue:
+            type: "integer"
+        required:
+        - "integerValue"
+    FormResponseSelections:
+      description: "The selections to a Form Message"
+      allOf:
+      - $ref: "#/components/schemas/AbstractFormResponse"
+      - type: "object"
+        properties:
+          sections:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/SelectionSection"
+        required:
+        - "sections"
+    TextInputType:
+      type: "string"
+      enum:
+      - "Singleline"
+      - "Multiline"
+    CompletedAttachmentUploadResult:
+      description: "Attachment upload that was completed successfully"
+      allOf:
+      - $ref: "#/components/schemas/AbstractAttachmentUploadResult"
+    SessionStatusChanged:
+      description: "A session status changed"
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+      - type: "object"
+        properties:
+          conversationIdentifier:
+            type: "string"
+            description: "Conversation Identifier"
+          channelAddressIdentifier:
+            type: "string"
+            description: "Channel Address Identifier"
+          sessionStatusPrev:
+            $ref: "#/components/schemas/SessionStatus"
+            description: "Previous value for session status"
+          sessionEndedByRole:
+            $ref: "#/components/schemas/ParticipantRole"
+            description: "The role of the participant that ended the session"
+          sessionEndTime:
+            format: "int64"
+            description: "Start epoch timestamp for session end time"
+            type: "integer"
+            example: "1573503300"
+          sessionStatus:
+            $ref: "#/components/schemas/SessionStatus"
+            description: "Updated session status"
+          sessionStartTime:
+            format: "int64"
+            description: "Start epoch timestamp for session start time"
+            type: "integer"
+            example: "1573503300"
+          sessionId:
+            type: "string"
+            description: "Session id"
+        required:
+        - "sessionId"
+        - "channelAddressIdentifier"
+        - "conversationIdentifier"
+        - "sessionStatus"
+        - "sessionStartTime"
+    EndUserConsentUpdated:
+      description: "An end user consent updated entry"
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+      - type: "object"
+        properties:
+          isEndUserInitiated:
+            type: "boolean"
+            description: "true if the end user initiated the consent action."
+          initiatingConversationEntryIdentifier:
+            type: "string"
+            description: "Identifier that indicates the conversation entry that initiated the consent update."
+            example: "a133c185-73a7-4adf-b6d9-b7fd62babb4e"
+          endUserSubject:
+            type: "string"
+            description: "End user for which the consent got updated."
+          endUserDisplayName:
+            type: "string"
+            description: "Display name of the end user which can be null."
+          confirmationConversationEntryIdentifier:
+            type: "string"
+            description: "Identifier that indicates the conversation entry that was sent as a consent confirmation to the end user."
+            example: "b233c185-73a7-4adf-b6d9-b7fd62babb4e"
+          consentStatus:
+            $ref: "#/components/schemas/ConsentStatus"
+            description: "The end user's consent status."
+        required:
+        - "endUserSubject"
+        - "consentStatus"
+        - "isEndUserInitiated"
+    RecordResult:
+      type: "object"
+      properties:
+        recordReferenceId:
+          $ref: "#/components/schemas/UniqueId"
+        resultMessage:
+          type: "string"
+        isCreated:
+          type: "boolean"
+      required:
+      - "recordReferenceId"
+      - "isCreated"
+    SessionContext:
+      description: "An event for providing session context"
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+      - type: "object"
+        properties:
+          sessionContext:
+            $ref: "#/components/schemas/AbstractSessionContext"
+        required:
+        - "sessionContext"
+    StaticFooter:
+      description: "The footer object that will have a button at a minimum"
+      allOf:
+      - $ref: "#/components/schemas/AbstractInput"
+      - type: "object"
+        properties:
+          buttonLabel:
+            type: "string"
+            description: "Label on the button on the footer of a screen to help navigation between screens"
+        required:
+        - "buttonLabel"
+    MessageId:
+      type: "string"
+      description: "UUID that references a message"
+      example: "57904eb6-5352-4c5e-adf6-5f100572cf5d"
+    AbstractTemplateSection:
+      description: "Sections or defined areas in a template"
+      type: "object"
+      properties:
+        templateSectionType:
+          $ref: "#/components/schemas/TemplateSectionTypes"
+      discriminator:
+        propertyName: "templateSectionType"
+    StaticContentExtendedText:
+      description: "Extended text content with rich formatting and attachments"
+      allOf:
+      - $ref: "#/components/schemas/AbstractStaticContent"
+      - type: "object"
+        properties:
+          isTruncated:
+            type: "boolean"
+            description: "Indicates if the content has been truncated"
+            default: false
+          contentHeader:
+            type: "string"
+            description: "Subject or header of the message content"
+          textContent:
+            type: "string"
+            description: "Text version of the message"
+          richContent:
+            type: "string"
+            description: "Rich formatted content of the message"
+          attachments:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/Attachment"
+          fullContent:
+            $ref: "#/components/schemas/Attachment"
+    AbstractChoicesResponse:
+      type: "object"
+      properties:
+        formatType:
+          $ref: "#/components/schemas/FormatType"
+      required:
+      - "formatType"
+      discriminator:
+        propertyName: "formatType"
+        mapping:
+          Selections: "#/components/schemas/ChoicesResponseSelections"
+          ExperienceType: "#/components/schemas/ChoicesResponseExperienceType"
+    AuthenticationErrorCode:
+      description: "Error codes for authentication failures"
+      type: "string"
+      enum:
+      - "InvalidAuthenticationRequest"
+      - "AccessDenied"
+      - "InvalidScope"
+      - "AuthenticationRequestExpired"
+      - "InternalServerError"
+      - "TemporarilyUnavailable"
+      - "ApexError"
+      example: "InvalidAuthenticationRequest"
+    ContentType:
+      type: "string"
+      description: "The type of content"
+      enum:
+      - "TextContent"
+      - "AssetContent"
+    NotCondition:
+      allOf:
+      - $ref: "#/components/schemas/AbstractConditionExpression"
+      - description: "Unary logical NOT applied to a single condition"
+        type: "object"
+        properties:
+          condition:
+            $ref: "#/components/schemas/AbstractConditionExpression"
+        required:
+        - "conditions"
+    AuthenticationResponseResult:
+      description: "Result obtained from the Authentication response."
+      allOf:
+      - $ref: "#/components/schemas/AbstractAuthenticationResponse"
+      - type: "object"
+        properties:
+          result:
+            $ref: "#/components/schemas/AuthenticationResult"
+            required:
+            - "result"
+    DynamicBooleanCondition:
+      description: "Defines when an element should be visible. Supports static booleans, expression strings (e.g., \"screen_a.choice == 'yes'\"), or structured condition objects."
+      oneOf:
+      - type: "boolean"
+      - $ref: "#/components/schemas/AbstractConditionExpression"
+    SelectInput:
+      description: "A single or multiple select input"
+      allOf:
+      - $ref: "#/components/schemas/AbstractInput"
+      - type: "object"
+        properties:
+          selectionDisplay:
+            $ref: "#/components/schemas/SelectionDisplay"
+            description: "How the options should be displayed"
+          multipleSelection:
+            type: "boolean"
+          optionItems:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/TitleOptionItem"
+        required:
+        - "optionItems"
+    ExternalTemplate:
+      description: "An external template."
+      type: "object"
+      properties:
+        name:
+          type: "string"
+          description: "name of the template"
+          example: "order_confirmation"
+        templateCategory:
+          $ref: "#/components/schemas/ExternalTemplateCategory"
+        contentSections:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/AbstractContentSection"
+        assets:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/AbstractAsset"
+        languageCode:
+          type: "string"
+          description: "language code for the external template"
+          example: "ja"
+        templateSections:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/AbstractTemplateSection"
+      required:
+      - "name"
+      - "languageCode"
+    ParticipantChangedOperation:
+      type: "string"
+      description: "set of participant changed operation"
+      enum:
+      - "add"
+      - "remove"
+      - "update"
+    ConditionExpressionType:
+      type: "string"
+      enum:
+      - "ComparisonCondition"
+      - "LogicalCondition"
+      - "NotCondition"
+    ChoicesButtons:
+      description: "Choices with button options"
+      allOf:
+      - $ref: "#/components/schemas/AbstractChoices"
+      - type: "object"
+        properties:
+          text:
+            type: "string"
+          optionItems:
+            minItems: 1
+            description: "Items must be of type TitleOptionItem."
+            type: "array"
+            items:
+              $ref: "#/components/schemas/TitleOptionItem"
+        required:
+        - "text"
+        - "optionItems"
+    ConsultConversationInfo:
+      description: "Consult conversation in a Multiparty conversation"
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+      - type: "object"
+        properties:
+          conversationIdentifier:
+            type: "string"
+            description: "Id of the consult conversation"
+          timestamp:
+            type: "integer"
+            format: "int64"
+            description: "Timestamp of the consult conversation"
+        required:
+        - "conversationIdentifier"
+        - "timestamp"
+    FormInputs:
+      description: "A form with inputs"
+      allOf:
+      - $ref: "#/components/schemas/AbstractForm"
+      - type: "object"
+        properties:
+          formTitle:
+            $ref: "#/components/schemas/AbstractTitleItem"
+          introScreen:
+            $ref: "#/components/schemas/AbstractFormIntroScreen"
+          images:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/ImageAsset"
+          message:
+            $ref: "#/components/schemas/AbstractTitleItem"
+          reply:
+            $ref: "#/components/schemas/AbstractTitleItem"
+          sections:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/AbstractInputSection"
+        required:
+        - "formTitle"
+        - "sections"
+    FormResponseReferences:
+      description: "References to records resulting from a form selection message"
+      allOf:
+      - $ref: "#/components/schemas/AbstractFormResponse"
+      - type: "object"
+        properties:
+          resultReferences:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/ResultReference"
+        required:
+        - "resultReferences"
+    FormErrorResult:
+      description: "The resulting error of handling a form response"
+      allOf:
+      - $ref: "#/components/schemas/AbstractFormResult"
+      - type: "object"
+        properties:
+          errors:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/FormError"
+        required:
+        - "errors"
+    ImageElement:
+      description: "Image display - always used for Display"
+      allOf:
+      - $ref: "#/components/schemas/AbstractElement"
+      - type: "object"
+        properties:
+          width:
+            type: "integer"
+          assetId:
+            $ref: "#/components/schemas/UniqueId"
+          height:
+            type: "integer"
+        required:
+        - "assetId"
+    AbstractAsset:
+      description: "The base type of an asset from which concrete asset types extends."
+      type: "object"
+      properties:
+        description:
+          type: "string"
+        id:
+          $ref: "#/components/schemas/UniqueId"
+        mimeType:
+          $ref: "#/components/schemas/MimeType"
+        assetUrl:
+          $ref: "#/components/schemas/Url"
+        referenceId:
+          $ref: "#/components/schemas/UniqueId"
+        assetType:
+          $ref: "#/components/schemas/AssetType"
+      required:
+      - "id"
+      - "assetType"
+      - "mimeType"
+      - "assetUrl"
+      discriminator:
+        propertyName: "assetType"
+    BooleanValue:
+      description: "A boolean value"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          booleanValue:
+            type: "boolean"
+        required:
+        - "booleanValue"
+    SessionStatus:
+      type: "string"
+      description: "Enum denoting the status of the session in the conversation."
+      enum:
+      - "Active"
+      - "Ended"
+      - "Waiting"
+      - "New"
+      - "Consent"
+      - "Inactive"
+      - "Error"
+      - "Paused"
+    AbstractInputValue:
+      type: "object"
+      properties:
+        inputValueType:
+          $ref: "#/components/schemas/InputValueType"
+        inputId:
+          $ref: "#/components/schemas/InputId"
+        inputlabel:
+          $ref: "#/components/schemas/AbstractTitleItem"
+      required:
+      - "inputValueType"
+      - "inputId"
+      discriminator:
+        propertyName: "inputValueType"
+    CurrencyAmountValue:
+      description: "A currency amount value"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          currencyAmount:
+            $ref: "#/components/schemas/CurrencyAmount"
+        required:
+        - "currencyAmount"
+    PaymentCheckoutBehavior:
+      type: "string"
+      description: "Hint for checkout UI behavior in chat surfaces."
+      enum:
+      - "ReviewAndPay"
+      - "QuickPay"
+    ChoicesMessage:
+      description: "MT message with choices"
+      allOf:
+      - $ref: "#/components/schemas/AbstractMessage"
+      - type: "object"
+        properties:
+          choices:
+            $ref: "#/components/schemas/AbstractChoices"
+        required:
+        - "choices"
+    ChoicesResponseExperienceType:
+      description: "The selections to a choices message as Experience Type values"
+      allOf:
+      - $ref: "#/components/schemas/AbstractChoicesResponse"
+      - type: "object"
+        properties:
+          experienceTypeResponse:
+            $ref: "#/components/schemas/AbstractExperienceTypeChoicesResponse"
+        required:
+        - "experienceTypeResponse"
+    AuthenticationError:
+      description: "Authentication Error Details"
+      type: "object"
+      properties:
+        errorMessage:
+          type: "string"
+        errorCode:
+          $ref: "#/components/schemas/AuthenticationErrorCode"
+      required:
+      - "errorMessage"
+      - "errorCode"
+    ChoicesMessageDefinition:
+      description: "Choices with option references"
+      allOf:
+      - $ref: "#/components/schemas/AbstractChoices"
+      - type: "object"
+        properties:
+          options:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/OptionValue"
+          messageDefinitionId:
+            $ref: "#/components/schemas/RecordId"
+            deprecated: true
+          optionReferences:
+            minItems: 0
+            type: "array"
+            items:
+              $ref: "#/components/schemas/OptionReference"
+            deprecated: true
+          messageDefinitionNameOrId:
+            $ref: "#/components/schemas/MessageDefinitionNameOrId"
+          targetLocale:
+            $ref: "#/components/schemas/Locale"
+            description: "The requested locale the message should be translated into"
+            example: "en-US"
+          parameters:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/NamedValue"
+        required:
+        - "messageDefinitionNameOrId"
+        - "options"
+    StaticContentReference:
+      description: "Deprecated. Replaced by ReferenceValue."
+      additionalProperties: false
+      type: "object"
+      properties:
+        referenceId:
+          $ref: "#/components/schemas/UniqueId"
+      required:
+      - "referenceId"
+      deprecated: true
+    SingleInputValue:
+      description: "Single value of an input"
+      allOf:
+      - $ref: "#/components/schemas/AbstractInputValue"
+      - type: "object"
+        properties:
+          displayValue:
+            type: "string"
+          value:
+            $ref: "#/components/schemas/AbstractValue"
+        required:
+        - "value"
+    PaymentRequestMerchantCapability:
+      description: "Merchant capabilities for a payment request."
+      type: "string"
+      enum:
+      - "Supports3DS"
+      - "SupportsEMV"
+      - "SupportsCredit"
+      - "SupportsDebit"
+      example: "SupportsCredit"
+    AbstractSessionContext:
+      description: "Base definition for all session context event"
+      type: "object"
+      properties:
+        contextType:
+          $ref: "#/components/schemas/SessionContextType"
+      required:
+      - "contextType"
+      discriminator:
+        propertyName: "contextType"
+    PaymentUpdateTypes:
+      description: "Allowed update actions"
+      type: "string"
+      enum:
+      - "PaymentMethodUpdate"
+      - "ShippingContactUpdate"
+      - "ShippingMethodUpdate"
+      example: "PaymentMethodUpdate"
+    AuthenticationRequestEncryptedOAuthToken:
+      description: "OAuth Token Request with encrypted access token"
+      allOf:
+      - $ref: "#/components/schemas/AbstractAuthenticationRequest"
+      - type: "object"
+        properties:
+          authorizationRequest:
+            $ref: "#/components/schemas/AbstractOAuthAuthorizationRequest"
+          images:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/ImageAsset"
+          message:
+            $ref: "#/components/schemas/AbstractTitleItem"
+          reply:
+            $ref: "#/components/schemas/AbstractTitleItem"
+          tokenRequest:
+            $ref: "#/components/schemas/AbstractOAuthTokenRequest"
+          tokenEncryptionKey:
+            type: "string"
+        required:
+        - "authorizationRequest"
+        - "tokenRequest"
+    OrderContext:
+      description: "Order-specific data used to render chat invoice (for WhatsApp, maps to order_details)."
+      type: "object"
+      properties:
+        expiration:
+          $ref: "#/components/schemas/OrderExpiration"
+        catalogId:
+          type: "string"
+          description: "Commerce Catalog Id"
+        type:
+          $ref: "#/components/schemas/OrderType"
+          example: "DigitalGoods"
+        checkoutBehavior:
+          $ref: "#/components/schemas/PaymentCheckoutBehavior"
+        beneficiaries:
+          minItems: 1
+          description: "Beneficiaries for shipping physical goods."
+          type: "array"
+          items:
+            $ref: "#/components/schemas/OrderBeneficiary"
+        referenceId:
+          type: "string"
+          description: "Unique order reference"
+      required:
+      - "referenceId"
+      - "type"
+    ChoicesCarousel:
+      description: "Choices as a carousel with options"
+      allOf:
+      - $ref: "#/components/schemas/AbstractChoices"
+      - type: "object"
+        properties:
+          title:
+            type: "string"
+          items:
+            minItems: 1
+            description: "Items must contain more than one TitleOptionItem for the choice options."
+            type: "array"
+            items:
+              $ref: "#/components/schemas/TitleItemWithInteractions"
+          images:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/ImageAsset"
+        required:
+        - "items"
+    ErrorAttachmentUploadResult:
+      description: "Attachment upload that failed"
+      allOf:
+      - $ref: "#/components/schemas/AbstractAttachmentUploadResult"
+      - type: "object"
+        properties:
+          errorMessage:
+            type: "string"
+            description: "A non localized message. Do not use for display in UI."
+          errorType:
+            description: "The type of error to be used for displaying a localized error message in UI"
+            $ref: "#/components/schemas/AttachmentUploadErrorType"
+        required:
+        - "errorType"
+    PaymentInitiationBoleto:
+      additionalProperties: false
+      type: "object"
+      properties:
+        digitableLine:
+          type: "string"
+          description: "Boleto 'linha digitável'."
+      required:
+      - "digitableLine"
+    UniqueIdentifier:
+      type: "string"
+      description: "An string identifier that identifies objects or items uniquely per message instance"
+      example: "7c4cce61-df7a-4a5b-a949-3d6e3ea278b5"
+    StaticContentExternalTemplate:
+      description: "A template with non-interactive content"
+      allOf:
+      - $ref: "#/components/schemas/AbstractStaticContent"
+      - type: "object"
+        properties:
+          externalTemplate:
+            $ref: "#/components/schemas/ExternalTemplate"
+        required:
+        - "externalTemplate"
+    SelectedOption:
+      description: "A selection option from a ChoicesSelectionsMessage"
+      additionalProperties: false
+      type: "object"
+      properties:
+        optionTitle:
+          $ref: "#/components/schemas/AbstractTitleItem"
+        optionIdentifier:
+          $ref: "#/components/schemas/UniqueIdentifier"
+        optionId:
+          $ref: "#/components/schemas/UniqueId"
+          deprecated: true
+      required:
+      - "optionIdentifier"
+    InputType:
+      type: "string"
+      enum:
+      - "SelectInput"
+      - "SelectNavigationInput"
+      - "OptionPickerInput"
+      - "DatePickerInput"
+      - "DateTimePickerInput"
+      - "TextInput"
+      - "StaticFooter"
+      - "StaticTitle"
+    PaymentRequestSupportedNetwork:
+      description: "Supported networks for a payment request."
+      type: "string"
+      enum:
+      - "AmericanExpress"
+      - "Discover"
+      - "Jcb"
+      - "MasterCard"
+      - "PrivateLabel"
+      - "Visa"
+      - "CartesBancaires"
+      - "ChinaUnionPay"
+      - "Eftpos"
+      - "Electron"
+      - "Elo"
+      - "Girocard"
+      - "Interac"
+      - "Mada"
+      - "Maestro"
+      - "Mir"
+      - "VPay"
+      example: "AmericanExpress"
+    TextValue:
+      description: "A text value"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          textValue:
+            type: "string"
+        required:
+        - "textValue"
+    PaymentRequestLineItem:
+      description: "Payment Request Line Item"
+      allOf:
+      - $ref: "#/components/schemas/AbstractPaymentLineItem"
+      - type: "object"
+        properties:
+          saleAmount:
+            type: "number"
+            format: "currency"
+            description: "Optional discounted price of the line item. Must be < amount."
+          image:
+            $ref: "#/components/schemas/ImageAsset"
+          amount:
+            type: "number"
+            format: "currency"
+            description: "The price of the line item."
+          quantity:
+            description: "Quantity of this item; 'amount' is unit price when quantity > 1."
+            default: 1
+            type: "integer"
+            minimum: 1
+          automaticReloadPaymentThresholdAmount:
+            type: "number"
+            format: "currency"
+            description: "The balance on an account, before the merchant applies automatic reload amount."
+          timing:
+            $ref: "#/components/schemas/AbstractTiming"
+          discount:
+            $ref: "#/components/schemas/Discount"
+            description: "Optional per-line discount object. Use when a discount program/name must be preserved."
+          label:
+            type: "string"
+            description: "A short description of the line item."
+          commerce:
+            $ref: "#/components/schemas/OrderItemCommerceAttributes"
+            description: "Catalog & compliance metadata."
+          status:
+            $ref: "#/components/schemas/PaymentItemStatus"
+        required:
+        - "label"
+        - "amount"
+    AppType:
+      type: "string"
+      description: "Enum listing unique identifiers for app services."
+      enum:
+      - "custom"
+      - "agent"
+      - "chatbot"
+      - "conversation"
+      - "live_message"
+      - "iamessage"
+      - "messaging"
+      - "telephony_integration"
+      - "translation"
+      - "voice_bot"
+    ShippingMethodValue:
+      description: "A shipping method value"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          shippingMethod:
+            $ref: "#/components/schemas/AbstractShippingMethod"
+        required:
+        - "shippingMethod"
+    CitationContent:
+      type: "object"
+      properties:
+        citations:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Citation"
+      required:
+      - "citations"
+    Discount:
+      description: "Discount details for an order or line item."
+      additionalProperties: false
+      type: "object"
+      properties:
+        description:
+          description: "Optional user-visible description of the discount."
+          type: "string"
+          maxLength: 200
+          example: "Festival offer - 10% off"
+        amount:
+          format: "currency"
+          description: "Absolute discount applied to this line (positive number)."
+          type: "number"
+          example: 25
+        code:
+          description: "Optional coupon/promo code presented to user."
+          type: "string"
+          maxLength: 64
+          example: "WELCOME10"
+        programName:
+          description: "Discount program name."
+          type: "string"
+          maxLength: 120
+          example: "DIWALI_SALE_2025"
+      required:
+      - "amount"
+    AssetReferenceValue:
+      description: "An asset reference value. Assets can be image, audio, video, document."
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          assetReferenceId:
+            $ref: "#/components/schemas/UniqueId"
+        required:
+        - "assetReferenceId"
+    AssetContent:
+      description: "Asset content such as an image or a video"
+      allOf:
+      - $ref: "#/components/schemas/AbstractContent"
+      - type: "object"
+        properties:
+          assetReferenceId:
+            $ref: "#/components/schemas/UniqueId"
+        required:
+        - "assetReferenceId"
+    AbstractPaymentRequest:
+      type: "object"
+      properties:
+        formatType:
+          $ref: "#/components/schemas/FormatType"
+      required:
+      - "formatType"
+      discriminator:
+        propertyName: "formatType"
+        mapping:
+          MessageDefinition: "#/components/schemas/PaymentRequestMessageDefinition"
+          Payment: "#/components/schemas/PaymentRequestPayment"
+    AbstractPaymentRequestDetails:
+      type: "object"
+      properties:
+        paymentRequestDetailsType:
+          $ref: "#/components/schemas/PaymentRequestDetailsType"
+      required:
+      - "paymentRequestDetailsType"
+      discriminator:
+        propertyName: "paymentRequestDetailsType"
+        mapping:
+          PaymentRequestDetails: "#/components/schemas/PaymentRequestDetails"
+    SessionOwnerChanged:
+      description: "A session owner changed"
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+      - type: "object"
+        properties:
+          ownerChangeTimestamp:
+            format: "int64"
+            description: "Epoch timestamp for session owner change"
+            type: "integer"
+            example: 1573503300
+          channelAddressIdentifier:
+            type: "string"
+            description: "Channel Address Identifier"
+          prevOwnerType:
+            $ref: "#/components/schemas/SessionOwnerType"
+            description: "Previous owner type"
+          sessionStatus:
+            $ref: "#/components/schemas/SessionStatus"
+            description: "Session status"
+          prevSessionOwnerId:
+            type: "string"
+            description: "Previous value for session ownerId"
+          sessionId:
+            type: "string"
+            description: "Session id"
+          newSessionOwnerId:
+            type: "string"
+            description: "Updated session ownerId"
+          sessionStartTimestamp:
+            format: "int64"
+            description: "Epoch timestamp for session start time"
+            type: "integer"
+            example: 1573503300
+          newOwnerType:
+            $ref: "#/components/schemas/SessionOwnerType"
+            description: "New owner type"
+        required:
+        - "sessionId"
+        - "channelAddressIdentifier"
+        - "newSessionOwnerId"
+        - "ownerChangeTimestamp"
+        - "newOwnerType"
+        - "sessionStartTimestamp"
+        - "sessionStatus"
+    StaticContentErrorMessage:
+      allOf:
+      - $ref: "#/components/schemas/AbstractStaticContent"
+      - type: "object"
+        properties:
+          title:
+            type: "string"
+          errorDetails:
+            $ref: "#/components/schemas/ErrorDetails"
+        required:
+        - "errorDetails"
+    TitleItem:
+      allOf:
+      - $ref: "#/components/schemas/AbstractTitleItem"
+    ParticipantChanged:
+      description: "A participant changed entry"
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+      - type: "object"
+        properties:
+          entries:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                operation:
+                  $ref: "#/components/schemas/ParticipantChangedOperation"
+                menuMetadata:
+                  $ref: "#/components/schemas/ParticipantChangedClientMenuMetadata"
+                participant:
+                  $ref: "#/components/schemas/Participant"
+                displayName:
+                  type: "string"
+        required:
+        - "participant"
+    MessageReason:
+      type: "string"
+      description: "Enum listing unique and specific reason a message was sent."
+      enum:
+      - "AutomatedResponse"
+      - "Consent"
+    AuthenticationRequestMessage:
+      description: "Authentication Request message"
+      allOf:
+      - $ref: "#/components/schemas/AbstractMessage"
+      - type: "object"
+        properties:
+          authenticationRequest:
+            $ref: "#/components/schemas/AbstractAuthenticationRequest"
+        required:
+        - "authenticationRequest"
+    OrderItemCategory:
+      type: "string"
+      description: "Classification used to compute order totals."
+      enum:
+      - "Product"
+      - "Tax"
+      - "Fee"
+    PaymentLineItemType:
+      description: "The type of payment line item."
+      type: "string"
+      enum:
+      - "PaymentRequestLineItem"
+      example: "PaymentRequestLineItem"
+    MimeType:
+      type: "string"
+      description: "A mime type"
+    Url:
+      type: "string"
+      description: "A url"
+    ContentSectionType:
+      type: "string"
+      description: "The type of a content section"
+      enum:
+      - "HeaderContentSection"
+      - "BodyContentSection"
+      - "FooterContentSection"
+      - "ActionsContentSection"
+    AttachmentUploadErrorType:
+      type: "string"
+      enum:
+      - "StorageLimitExceeded"
+      - "AttachmentTooLarge"
+      - "AttachmentNotFound"
+      - "AttachmentUploadNotEnabled"
+      - "AttachmentUploadNotAllowed"
+      - "InternalServerError"
+    PaymentMethodHint:
+      type: "string"
+      description: "High-level payment method categories supported by provider checkout/link."
+      enum:
+      - "Card"
+      - "Upi"
+      - "NetBanking"
+      - "Wallet"
+      - "Boleto"
+      - "Pix"
+      - "PayLater"
+      - "Emi"
+    ConfirmSection:
+      description: "Optional confirmation prompt to display for form."
+      additionalProperties: false
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "Optional confirmation text shown to the user."
+          minLength: 1
+    EntryId:
+      type: "string"
+      description: "UUID that references this entry"
+      example: "f7904eb6-5352-4c5e-adf6-5f100572cf5d"
+    ConsentStatus:
+      type: "string"
+      description: "Enum denoting the consent status of the end user."
+      enum:
+      - "OptIn"
+      - "OptOut"
+    BodyContentSection:
+      description: "A body content section"
+      allOf:
+      - $ref: "#/components/schemas/AbstractContentSection"
+      - type: "object"
+        properties:
+          bodyContents:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/AbstractContent"
+        required:
+        - "bodyContents"
+    RecordId:
+      type: "string"
+      description: "An id of an application record"
+    ExperienceTypeRef:
+      type: "string"
+      description: "Unique reference to an Experience Type"
+    FormMessage:
+      description: "MT Form message"
+      allOf:
+      - $ref: "#/components/schemas/AbstractMessage"
+      - type: "object"
+        properties:
+          form:
+            $ref: "#/components/schemas/AbstractForm"
+        required:
+        - "form"
+    ImageAsset:
+      description: "An image asset of a message."
+      allOf:
+      - $ref: "#/components/schemas/AbstractAsset"
+    CompositeValue:
+      description: "A composite value that contains a collection of named values"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          items:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/NamedValue"
+        required:
+        - "items"
+    RoutingType:
+      type: "string"
+      description: "Routing type - sent in routing related events as well as in the RoutingContext"
+      enum:
+      - "Initial"
+      - "Transfer"
+      - "Conference"
+    ExperienceTypeInputType:
+      type: "string"
+      enum:
+      - "ExperienceTypeValueInput"
+      - "ExperienceTypeSelectInput"
+    AbstractElement:
+      type: "object"
+      properties:
+        elementType:
+          $ref: "#/components/schemas/ElementType"
+      required:
+      - "elementType"
+      discriminator:
+        propertyName: "elementType"
+        mapping:
+          IfElement: "#/components/schemas/IfElement"
+          SwitchElement: "#/components/schemas/SwitchElement"
+          StaticTextElement: "#/components/schemas/StaticTextElement"
+          FooterElement: "#/components/schemas/FooterElement"
+          ImageElement: "#/components/schemas/ImageElement"
+    CustomHandlingType:
+      type: "string"
+      description: "Specifies the type of custom handling required for this message"
+      enum:
+      - "None"
+      - "Survey"
+    OAuthDelegatedClientSecretTokenRequest:
+      description: "OAuth Delegated Token Request"
+      allOf:
+      - $ref: "#/components/schemas/AbstractOAuthTokenRequest"
+      - type: "object"
+        properties:
+          clientSecret:
+            type: "string"
+    VisibilityStrategy:
+      type: "string"
+      description: "Enum listing unique visibility strategies for entries."
+      enum:
+      - "Default"
+      - "Internal"
+    PaymentRequestDetails:
+      description: "Payment Request Details"
+      allOf:
+      - $ref: "#/components/schemas/AbstractPaymentRequestDetails"
+      - type: "object"
+        properties:
+          allowedUpdateActionTypes:
+            type: "array"
+            description: "The set of allowed update actions by the end user like payment update, shipping contact update, etc."
+            items:
+              $ref: "#/components/schemas/PaymentUpdateTypes"
+          endpoints:
+            $ref: "#/components/schemas/PaymentRequestEndPoints"
+          totalLineItem:
+            description: "The total of all the line items."
+            $ref: "#/components/schemas/AbstractPaymentLineItem"
+          requiredShippingContactFields:
+            type: "array"
+            description: "The list of shipping information fields required to fulfill this order."
+            items:
+              $ref: "#/components/schemas/PaymentRequestContactField"
+          merchantCapabilities:
+            type: "array"
+            description: "The list of payment capabilities supported by the merchant."
+            items:
+              $ref: "#/components/schemas/PaymentRequestMerchantCapability"
+          requiredBillingContactFields:
+            type: "array"
+            description: "The list of billing information fields required to process this transaction."
+            items:
+              $ref: "#/components/schemas/PaymentRequestContactField"
+          merchantName:
+            type: "string"
+            description: "Merchant name"
+          lineItems:
+            minItems: 1
+            description: "A set of line items explaining the charges or recurring payments."
+            type: "array"
+            items:
+              $ref: "#/components/schemas/AbstractPaymentLineItem"
+          merchantIdentifier:
+            type: "string"
+            description: "Merchant ID"
+          supportedPaymentNetworks:
+            type: "array"
+            description: "The list of payment networks supported by the merchant."
+            items:
+              $ref: "#/components/schemas/PaymentRequestSupportedNetwork"
+          merchantDomain:
+            type: "string"
+            description: "Domain name associated with the Merchant Account"
+          paymentInitiations:
+            type: "array"
+            description: "One or more ways to initiate payment."
+            items:
+              $ref: "#/components/schemas/PaymentInitiation"
+          countryCode:
+            type: "string"
+            description: "Two-letter ISO 3166 country code of Merchant."
+            example: "US"
+          merchantIdentityCertificate:
+            type: "string"
+            description: "Merchant certificate"
+          shippingAmount:
+            type: "number"
+            format: "currency"
+            description: "Computed cost for the currently selected shipping method (or flat shipping for the order)."
+          merchantIdentityKey:
+            type: "string"
+            description: "Merchant key"
+          currencyCode:
+            type: "string"
+            description: "Three-letter ISO 4217 currency code of payment."
+            example: "USD"
+          supportedCountries:
+            type: "array"
+            description: "Two-letter ISO 3166 country code of supported countries."
+            items:
+              type: "string"
+          shippingMethods:
+            type: "array"
+            description: "The list of available shipping methods."
+            items:
+              $ref: "#/components/schemas/AbstractShippingMethod"
+          order:
+            $ref: "#/components/schemas/OrderContext"
+        required:
+        - "countryCode"
+        - "currencyCode"
+        - "lineItems"
+        - "totalLineItem"
+      anyOf:
+      - title: "Apple payments"
+        required:
+        - "merchantName"
+        - "merchantDomain"
+        - "merchantIdentifier"
+        - "merchantIdentityCertificate"
+        - "merchantIdentityKey"
+        - "merchantCapabilities"
+      - title: "Initiation-driven payments"
+        required:
+        - "paymentInitiations"
+        - "order"
+    ActionInvocation:
+      description: "Typed action plus free-form parameters for execution."
+      type: "object"
+      properties:
+        type:
+          type: "string"
+          description: "Action identifier (e.g., 'copilotActionInput/EmployeeCopilot__SummarizeRecord')."
+        property:
+          type: "string"
+          description: "Action property."
+        value:
+          type: "object"
+          description: "Action parameters."
+          additionalProperties: true
+      required:
+      - "type"
+      - "value"
+    TextContentType:
+      type: "string"
+      description: "The content format of the text."
+      enum:
+      - "PlainText"
+      - "Markdown"
+    Text:
+      type: "string"
+      description: "Text content"
+    CitedReferenceType:
+      type: "string"
+      description: "The types of cited references."
+      enum:
+      - "Link"
+    TimeSlotItemType:
+      type: "string"
+      description: "The type of a time slot item."
+      enum:
+      - "TimeSlotOptionItem"
+    FooterElement:
+      description: "A footer component that appears at the bottom of the screen."
+      allOf:
+      - $ref: "#/components/schemas/AbstractElement"
+      - type: "object"
+        properties:
+          action:
+            $ref: "#/components/schemas/AbstractFormAction"
+          rightCaption:
+            type: "string"
+          centerCaption:
+            type: "string"
+          label:
+            type: "string"
+          enabled:
+            type: "boolean"
+          leftCaption:
+            type: "string"
+        required:
+        - "label"
+        - "action"
+    AbstractTiming:
+      type: "object"
+      properties:
+        timingType:
+          $ref: "#/components/schemas/TimingType"
+      required:
+      - "timingType"
+      discriminator:
+        propertyName: "timingType"
+        mapping:
+          RecurringTiming: "#/components/schemas/RecurringTiming"
+          DeferredTiming: "#/components/schemas/DeferredTiming"
+    CommandMessage:
+      allOf:
+      - $ref: "#/components/schemas/AbstractMessage"
+      - type: "object"
+        properties:
+          command:
+            $ref: "#/components/schemas/AbstractCommand"
+        required:
+        - "command"
+    AbstractShippingMethod:
+      type: "object"
+      properties:
+        shippingMethodType:
+          $ref: "#/components/schemas/ShippingMethodType"
+      required:
+      - "shippingMethodType"
+      discriminator:
+        propertyName: "shippingMethodType"
+        mapping:
+          PaymentRequestShippingMethod: "#/components/schemas/PaymentRequestShippingMethod"
+    AbstractAuthenticationResponse:
+      type: "object"
+      properties:
+        formatType:
+          $ref: "#/components/schemas/FormatType"
+      required:
+      - "formatType"
+      discriminator:
+        propertyName: "formatType"
+        mapping:
+          EncryptedOAuthToken: "#/components/schemas/AuthenticationResponseEncryptedOAuthToken"
+          Result: "#/components/schemas/AuthenticationResponseResult"
+    AbstractExperienceTypeChoicesResponse:
+      type: "object"
+      properties:
+        responseType:
+          $ref: "#/components/schemas/ExperienceTypeChoicesResponseType"
+      required:
+      - "responseType"
+      discriminator:
+        propertyName: "responseType"
+    StaticContentAttachments:
+      description: "Attachments with optional text"
+      allOf:
+      - $ref: "#/components/schemas/AbstractStaticContent"
+      - type: "object"
+        properties:
+          text:
+            $ref: "#/components/schemas/Text"
+          attachments:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/Attachment"
+        required:
+        - "attachments"
+    AbstractContentSection:
+      description: "The base type of a content section"
+      type: "object"
+      properties:
+        sectionType:
+          $ref: "#/components/schemas/ContentSectionType"
+      required:
+      - "sectionType"
+      discriminator:
+        propertyName: "sectionType"
+    AbstractChoices:
+      type: "object"
+      properties:
+        formatType:
+          $ref: "#/components/schemas/FormatType"
+      required:
+      - "formatType"
+      discriminator:
+        propertyName: "formatType"
+        mapping:
+          TimePicker: "#/components/schemas/ChoicesTimePicker"
+          MessageDefinition: "#/components/schemas/ChoicesMessageDefinition"
+          ExperienceType: "#/components/schemas/ChoicesExperienceType"
+          Carousel: "#/components/schemas/ChoicesCarousel"
+          Media: "#/components/schemas/ChoicesMedia"
+          Buttons: "#/components/schemas/ChoicesButtons"
+          DisplayableOptions: "#/components/schemas/ChoicesDisplayableOptions"
+          ConfirmMessage: "#/components/schemas/ChoicesConfirmMessage"
+          QuickReplies: "#/components/schemas/ChoicesQuickReplies"
+          ListPicker: "#/components/schemas/ChoicesListPicker"
+    AgentRoutingConfigDetails:
+      description: "Agent routing based configuration details."
+      allOf:
+      - $ref: "#/components/schemas/RoutingConfigurationDetails"
+      - type: "object"
+        properties:
+          agentId:
+            type: "string"
+    InlineMetadataCitedDetails:
+      description: "Collection of inline metadata for a cited reference."
+      allOf:
+      - $ref: "#/components/schemas/AbstractCitedDetails"
+      - type: "object"
+        properties:
+          inlineMetadata:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/CitedInlineMetadata"
+        required:
+        - "inlineMetadata"
+    DynamicValue:
+      description: "A value that can be either static primitive or a dynamic reference. Exactly one of the value fields must be set."
+      oneOf:
+      - required:
+        - "stringValue"
+      - required:
+        - "booleanValue"
+      - required:
+        - "numberValue"
+      - required:
+        - "reference"
+      type: "object"
+      properties:
+        reference:
+          $ref: "#/components/schemas/DynamicReference"
+          description: "Dynamic reference to a screen field value"
+        stringValue:
+          type: "string"
+          description: "Static string value"
+        booleanValue:
+          type: "boolean"
+          description: "Static boolean value"
+        numberValue:
+          type: "number"
+          description: "Static number value"
+    RoutingConfigurationDetails:
+      description: "Definition of Routing Configuration Details including routing configuration type and other routing details associated with the routing configuration type."
+      type: "object"
+      properties:
+        routingConfigurationType:
+          $ref: "#/components/schemas/RoutingConfigurationType"
+      discriminator:
+        propertyName: "routingConfigurationType"
+        mapping:
+          QueueRoutingType: "#/components/schemas/QueueRoutingConfigDetails"
+          AgentRoutingType: "#/components/schemas/AgentRoutingConfigDetails"
+    PaymentError:
+      description: "Payment Error Details"
+      type: "object"
+      properties:
+        errorMessage:
+          type: "string"
+        errorCode:
+          $ref: "#/components/schemas/PaymentErrorCode"
+      required:
+      - "errorMessage"
+      - "errorCode"
+    Locale:
+      type: "string"
+      description: "A locale as defined by IETF BCP 47"
+      example: "en-US"
+    OptionPickerInput:
+      description: "A picker input to select an option"
+      allOf:
+      - $ref: "#/components/schemas/AbstractInput"
+      - type: "object"
+        properties:
+          selectedOptionIndex:
+            type: "integer"
+          optionItems:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/TitleOptionItem"
+        required:
+        - "optionItems"
+    EstimatedWaitTime:
+      type: "object"
+      description: "Estimated Wait Time value and whether the Estimated Wait Time is requested or not."
+      properties:
+        estimatedWaitTimeInSeconds:
+          type: "integer"
+          format: "int32"
+        isEWTRequested:
+          type: "boolean"
+    FontStyle:
+      type: "string"
+      description: "Font style for text components."
+      enum:
+      - "Italic"
+    ActionType:
+      type: "string"
+      description: "The type of an action"
+      enum:
+      - "PhoneCallAction"
+      - "VoiceCallAction"
+      - "LinkAction"
+      - "CopyCodeAction"
+      - "TextReplyAction"
+    AbstractOAuthTokenRequest:
+      type: "object"
+      properties:
+        requestType:
+          $ref: "#/components/schemas/OAuthTokenRequestType"
+      required:
+      - "requestType"
+      discriminator:
+        propertyName: "requestType"
+        mapping:
+          OAuthDelegatedClientSecretTokenRequest: "#/components/schemas/OAuthDelegatedClientSecretTokenRequest"
+    ExperienceTypeOption:
+      description: "A value that presents an Experience Type value as an option"
+      type: "object"
+      properties:
+        value:
+          description: "A value - this can be Any type as per OAS https://swagger.io/docs/specification/data-models/data-types/#any"
+          example: "a free form string or an object or an array"
+        optionIdentifier:
+          $ref: "#/components/schemas/UniqueIdentifier"
+      required:
+      - "optionIdentifier"
+      - "value"
+    ReferenceValue:
+      description: "A reference value"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          referenceId:
+            $ref: "#/components/schemas/UniqueId"
+        required:
+        - "referenceId"
+    StaticContentButtons:
+      description: "Text with buttons"
+      allOf:
+      - $ref: "#/components/schemas/AbstractStaticContent"
+      - type: "object"
+        properties:
+          actions:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/AbstractAction"
+          text:
+            $ref: "#/components/schemas/Text"
+          linkItems:
+            minItems: 1
+            description: "Deprecated. Use actions with ActionType.LinkAction items instead."
+            type: "array"
+            items:
+              $ref: "#/components/schemas/TitleLinkItem"
+            deprecated: true
+        required:
+        - "text"
+    PaymentInitiationMode:
+      type: "string"
+      description: "How the payment is initiated/completed."
+      enum:
+      - "ExternalPaymentApp"
+      - "HostedLink"
+      - "GatewayCheckout"
+    AbstractSection:
+      description: "Common attributes for all section(screen) types. This can include input and non input fields."
+      type: "object"
+      properties:
+        submitFlow:
+          type: "boolean"
+        id:
+          description: "The section Id."
+          $ref: "#/components/schemas/SectionId"
+        title:
+          type: "string"
+          description: "The title of each section."
+        sectionType:
+          $ref: "#/components/schemas/SectionType"
+        nextSectionId:
+          description: "The next section to navigate to from the current section."
+          $ref: "#/components/schemas/SectionId"
+      required:
+      - "sectionType"
+      - "id"
+      discriminator:
+        propertyName: "sectionType"
+    PaymentRequestEndPoints:
+      type: "object"
+      description: "Payment Request EndPoints"
+      properties:
+        fallbackUrl:
+          $ref: "#/components/schemas/Url"
+    TitleVideoItem:
+      allOf:
+      - $ref: "#/components/schemas/AbstractTitleItem"
+      - type: "object"
+        properties:
+          videoId:
+            $ref: "#/components/schemas/UniqueId"
+          imageId:
+            $ref: "#/components/schemas/UniqueId"
+        required:
+        - "videoId"
+    OAuthTokenRequestType:
+      description: "Type of OAuth Token Request"
+      type: "string"
+      enum:
+      - "OAuthDelegatedClientSecretTokenRequest"
+      example: "OAuthDelegatedClientSecretTokenRequest"
+    RecurringTiming:
+      description: "Recurring Timing"
+      allOf:
+      - $ref: "#/components/schemas/AbstractTiming"
+      - type: "object"
+        properties:
+          endDate:
+            type: "string"
+            format: "date"
+          startDate:
+            type: "string"
+            format: "date"
+          intervalUnit:
+            $ref: "#/components/schemas/TimingIntervalUnit"
+          intervalCount:
+            type: "integer"
+        required:
+        - "startDate"
+        - "intervalUnit"
+        - "intervalCount"
+    OrderItemImporter:
+      description: "Importer details"
+      type: "object"
+      properties:
+        name:
+          type: "string"
+          description: "Importer name"
+          example: "ACME Imports Pvt Ltd"
+        countryOfOrigin:
+          type: "string"
+          description: "Two-letter ISO 3166-1 alpha-2; maps to order_details.items[].country_of_origin."
+          example: "IN"
+        address:
+          $ref: "#/components/schemas/PostalAddress"
+          description: "Importer address"
+      required:
+      - "countryOfOrigin"
+      - "name"
+      - "address"
+      example: "Details required for India when not using a WhatsApp catalog."
+    SelectedOptionsInputValue:
+      description: "The select options of a select/picker input"
+      allOf:
+      - $ref: "#/components/schemas/AbstractInputValue"
+      - type: "object"
+        properties:
+          selectedOptions:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/SelectedOption"
+        required:
+        - "selectedOptions"
+    OrderType:
+      type: "string"
+      description: "What kind of goods the order represents (for chat payments)."
+      enum:
+      - "DigitalGoods"
+      - "PhysicalGoods"
+    RecordReference:
+      description: "A reference to a record."
+      additionalProperties: false
+      type: "object"
+      properties:
+        recordId:
+          $ref: "#/components/schemas/RecordId"
+        id:
+          $ref: "#/components/schemas/UniqueId"
+      required:
+      - "id"
+      - "recordId"
+    ChoicesExperienceType:
+      description: "An Experience Type Choices Message"
+      allOf:
+      - $ref: "#/components/schemas/AbstractChoices"
+      - type: "object"
+        properties:
+          optionType:
+            $ref: "#/components/schemas/ExperienceTypeRef"
+          sourceType:
+            $ref: "#/components/schemas/ExperienceTypeRef"
+          sourceProperty:
+            type: "string"
+          options:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/ExperienceTypeOption"
+          targetType:
+            $ref: "#/components/schemas/ExperienceTypeRef"
+          message:
+            type: "string"
+          targetProperty:
+            type: "string"
+        required:
+        - "targetType"
+        - "sourceType"
+        - "options"
+    CalendarEventOptionsItem:
+      description: "A calendar events with time slot options"
+      allOf:
+      - $ref: "#/components/schemas/AbstractCalendarEventItem"
+      - type: "object"
+        properties:
+          identifier:
+            $ref: "#/components/schemas/UniqueIdentifier"
+          timeSlotOptionItems:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/TimeSlotOptionItem"
+        required:
+        - "identifier"
+        - "timeSlotOptionItems"
+    AbstractFormAction:
+      description: "The base type of a form action"
+      type: "object"
+      properties:
+        actionType:
+          $ref: "#/components/schemas/FormActionType"
+      required:
+      - "actionType"
+      discriminator:
+        propertyName: "actionType"
+    WebViewDisplayType:
+      type: "string"
+      description: "How a StaticContentWebView should be displayed."
+      enum:
+      - "AutoOverlay"
+    CitedInlineMetadata:
+      description: "Inline metadata for a citation."
+      type: "object"
+      properties:
+        claim:
+          $ref: "#/components/schema/CitationClaim"
+        citedLocationOffset:
+          type: "integer"
+          description: "The offset position in the message where a citation anchor should be added for this citation."
+      required:
+      - "citedLocationOffset"
+    PaymentStatus:
+      description: "Payment status"
+      type: "string"
+      enum:
+      - "Success"
+      - "Error"
+      - "Pending"
+      example: "Success"
+    LinkAction:
+      description: "An action to visit a website"
+      allOf:
+      - $ref: "#/components/schemas/AbstractAction"
+      - type: "object"
+        properties:
+          url:
+            $ref: "#/components/schemas/Url"
+        required:
+        - "url"
+    ElementType:
+      type: "string"
+      enum:
+      - "ImageElement"
+      - "StaticTextElement"
+      - "FooterElement"
+      - "IfElement"
+      - "SwitchElement"
+    BodyTemplateSection:
+      description: "Body section of the template"
+      allOf:
+      - $ref: "#/components/schemas/AbstractTemplateSection"
+      - type: "object"
+        properties:
+          parameters:
+            minItems: 1
+            description: "Ordered list of parameters with their type and value defined"
+            type: "array"
+            items:
+              $ref: "#/components/schemas/AbstractValue"
+        required:
+        - "parameters"
+    DatePickerInput:
+      description: "An input to pick a date"
+      allOf:
+      - $ref: "#/components/schemas/AbstractInput"
+      - type: "object"
+        properties:
+          maximumDate:
+            type: "string"
+            format: "date"
+          dateFormat:
+            type: "string"
+            example: "MM/DD/YYYY"
+          minimumDate:
+            type: "string"
+            format: "date"
+          startDate:
+            type: "string"
+            format: "date"
+            example: "2021-02-25"
+    LogicalOperator:
+      type: "string"
+      enum:
+      - "And"
+      - "Or"
+    AbstractCommand:
+      type: "object"
+      properties:
+        formatType:
+          $ref: "#/components/schemas/FormatType"
+      required:
+      - "formatType"
+      discriminator:
+        propertyName: "formatType"
+        mapping:
+          ExperienceType: "#/components/schemas/CommandExperienceType"
+    IfElement:
+      description: "Conditional element that renders content based on a condition"
+      allOf:
+      - $ref: "#/components/schemas/AbstractElement"
+      - type: "object"
+        properties:
+          condition:
+            $ref: "#/components/schemas/AbstractConditionExpression"
+          else:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/SectionElement"
+          then:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/SectionElement"
+        required:
+        - "condition"
+        - "then"
+    FormSplashScreen:
+      description: "A splash screen for a form"
+      allOf:
+      - $ref: "#/components/schemas/AbstractFormIntroScreen"
+      - type: "object"
+        properties:
+          imageId:
+            $ref: "#/components/schemas/UniqueId"
+          text:
+            type: "string"
+          title:
+            type: "string"
+          buttonLabel:
+            type: "string"
+      required:
+      - "buttonLabel"
+    CurrencyAmount:
+      description: "The base type for currency amounts"
+      type: "object"
+      properties:
+        currencyCode:
+          type: "string"
+          description: "Three-letter ISO 4217 currency code."
+          example: "USD"
+        amount:
+          format: "currency"
+          description: "The amount in decimal."
+          type: "number"
+          example: "25.50"
+      required:
+      - "currencyCode"
+      - "amount"
+    ChoicesConfirmMessage:
+      allOf:
+      - $ref: "#/components/schemas/AbstractChoices"
+      - type: "object"
+        properties:
+          message:
+            type: "string"
+          confirm:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/ActionInvocation"
+        required:
+        - "message"
+        - "confirm"
+    FormResponseResult:
+      description: "The result of handling a form response"
+      allOf:
+      - $ref: "#/components/schemas/AbstractFormResponse"
+      - type: "object"
+        properties:
+          result:
+            $ref: "#/components/schemas/AbstractFormResult"
+        required:
+        - "result"
+    FormActionType:
+      type: "string"
+      enum:
+      - "NavigateFormAction"
+      - "CompleteFormAction"
+    ComparisonCondition:
+      allOf:
+      - $ref: "#/components/schemas/AbstractConditionExpression"
+      - description: "Comparison between two values. Both sides should have the same type and at least one of them should contain a dynamic variable"
+        type: "object"
+        properties:
+          left:
+            $ref: "#/components/schemas/DynamicValue"
+          operator:
+            $ref: "#/components/schemas/ComparisonOperator"
+          right:
+            $ref: "#/components/schemas/DynamicValue"
+        required:
+        - "operator"
+        - "left"
+        - "right"
+    FormMessageDefinition:
+      description: "Reference to a form message definition"
+      allOf:
+      - $ref: "#/components/schemas/AbstractForm"
+      - type: "object"
+        properties:
+          parameters:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/NamedValue"
+          messageDefinitionNameOrId:
+            $ref: "#/components/schemas/MessageDefinitionNameOrId"
+          targetLocale:
+            $ref: "#/components/schemas/Locale"
+            description: "The requested locale the message should be translated into"
+            example: "en-US"
+        required:
+        - "messageDefinitionNameOrId"
+    PendingAttachmentUploadResult:
+      description: "Attachment upload that is pending and will be handled async"
+      allOf:
+      - $ref: "#/components/schemas/AbstractAttachmentUploadResult"
+      - type: "object"
+        properties:
+          referenceId:
+            $ref: "#/components/schemas/UniqueId"
+        required:
+        - "referenceId"
+    CancelReason:
+      type: "string"
+      description: "Reason for cancelling the conference routing"
+      enum:
+      - "Unknown"
+      - "Unavailable"
+      - "Decline"
+      - "Cancel"
+      - "EndUserEnded"
+    MessageContentCategory:
+      description: "Categories for an MT message."
+      type: "string"
+      enum:
+      - "Reminder"
+      - "Feedback"
+      - "OrderUpdate"
+      - "AccountUpdate"
+      - "PromotionalOutreach"
+      - "Authentication"
+      example: "PromotionalOutreach"
+    AbstractValue:
+      description: "The base type from which simple value types extends"
+      type: "object"
+      properties:
+        valueType:
+          $ref: "#/components/schemas/ValueType"
+      required:
+      - "valueType"
+      discriminator:
+        propertyName: "valueType"
+    MessageUpdated:
+      description: "A message entry was updated"
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+      - type: "object"
+        properties:
+          updatedMessage:
+            $ref: "#/components/schemas/AbstractMessage"
+        required:
+        - "updatedMessage"
+    ExperienceTypeSelectInput:
+      description: "An Experience Type select input"
+      allOf:
+      - $ref: "#/components/schemas/AbstractExperienceTypeInput"
+      - type: "object"
+        properties:
+          optionType:
+            $ref: "#/components/schemas/ExperienceTypeRef"
+          defaultOptionId:
+            type: "string"
+            description: "ID of the option selected by default."
+          sourceType:
+            $ref: "#/components/schemas/ExperienceTypeRef"
+          sourceProperty:
+            type: "string"
+          options:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/ExperienceTypeOption"
+          targetType:
+            $ref: "#/components/schemas/ExperienceTypeRef"
+          targetProperty:
+            type: "string"
+        required:
+        - "targetType"
+        - "sourceType"
+        - "options"
+    SessionContextSet:
+      description: "An event to set session context"
+      allOf:
+      - $ref: "#/components/schemas/AbstractSessionContext"
+      - type: "object"
+        properties:
+          contextVariables:
+            minItems: 1
+            maxItems: 1
+            type: "array"
+            items:
+              $ref: "#/components/schemas/NamedValue"
+        required:
+        - "contextVariables"
+    TextInputContentType:
+      type: "string"
+      enum:
+      - "Name"
+      - "NamePrefix"
+      - "GivenName"
+      - "MiddleName"
+      - "FamilyName"
+      - "NameSuffix"
+      - "Nickname"
+      - "JobTitle"
+      - "OrganizationName"
+      - "Location"
+      - "FullStreetAddress"
+      - "StreetAddressLine1"
+      - "StreetAddressLine2"
+      - "AddressCity"
+      - "AddressState"
+      - "AddressCityAndState"
+      - "Sublocality"
+      - "CountryName"
+      - "PostalCode"
+      - "TelephoneNumber"
+      - "EmailAddress"
+      - "URL"
+      - "CreditCardNumber"
+      - "Username"
+      - "Password"
+      - "NewPassword"
+      - "OneTimeCode"
+    OAuthCodeDelegatedExchangeAuthorizationRequest:
+      description: "OAuth Delegated Code Authorization Request"
+      allOf:
+      - $ref: "#/components/schemas/AbstractOAuthAuthorizationRequest"
+      - type: "object"
+    SingleInputFlowSection:
+      description: "A form section with a single input field and optional non input components."
+      allOf:
+      - $ref: "#/components/schemas/AbstractSection"
+      - type: "object"
+        properties:
+          components:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/AbstractInput"
+        required:
+        - "components"
+    PaymentInitiationUpi:
+      additionalProperties: false
+      type: "object"
+      properties:
+        payeeHandle:
+          type: "string"
+          description: "UPI VPA/handle"
+          example: "acme@icici"
+        intentLink:
+          $ref: "#/components/schemas/Url"
+          description: "Full UPI deep link from PG."
+          example: "upi://pay?pa=acme@icici&pn=ACME&am=1769.00&cu=INR&tr=ORD-8421"
+        merchantCategoryCode:
+          type: "string"
+      required:
+      - "intentLink"
+    DiscountValue:
+      description: "A discount value"
+      allOf:
+      - $ref: "#/components/schemas/AbstractValue"
+      - type: "object"
+        properties:
+          discount:
+            $ref: "#/components/schemas/Discount"
+        required:
+        - "discount"
+    StaticContentMessageDefinition:
+      description: "Static content references"
+      allOf:
+      - $ref: "#/components/schemas/AbstractStaticContent"
+      - type: "object"
+        properties:
+          itemReferences:
+            minItems: 1
+            type: "array"
+            items:
+              $ref: "#/components/schemas/StaticContentReference"
+            deprecated: true
+          messageDefinitionId:
+            $ref: "#/components/schemas/RecordId"
+            deprecated: true
+          messageDefinitionNameOrId:
+            $ref: "#/components/schemas/MessageDefinitionNameOrId"
+          targetLocale:
+            $ref: "#/components/schemas/Locale"
+            description: "The requested locale the message should be translated into"
+            example: "en-US"
+          parameters:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/NamedValue"
+        required:
+        - "messageDefinitionNameOrId"
+    TitleItemWithLinks:
+      additionalProperties: false
+      type: "object"
+      properties:
+        titleItem:
+          $ref: "#/components/schemas/AbstractTitleItem"
+        linkItems:
+          type: "array"
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/TitleLinkItem"
+      required:
+      - "titleItem"
+      - "linkItems"
+    MessagePrompt:
+      description: "A message bubble with specific content section like header, body, footer along with button label, that leads to the flow."
+      type: "object"
+      properties:
+        header:
+          $ref: "#/components/schemas/HeaderContentSection"
+        body:
+          type: "string"
+        footer:
+          $ref: "#/components/schemas/FooterContentSection"
+        buttonLabel:
+          type: "string"
+      required:
+      - "body"
+      - "buttonLabel"
+    ComparisonOperator:
+      type: "string"
+      enum:
+      - "Equals"
+      - "NotEquals"
+      - "GreaterThan"
+      - "LessThan"
+      - "GreaterThanOrEquals"
+      - "LessThanOrEquals"
+    InReplyToMessageId:
+      type: "string"
+      description: "MessageId from the previous message being replied to"
+      example: "a133c185-73a7-4adf-b6d9-b7fd62babb4e"
+    TitleItemType:
+      type: "string"
+      enum:
+      - "TitleItem"
+      - "TitleImageItem"
+      - "TitleVideoItem"
+    Message:
+      description: "A message entry"
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+      - type: "object"
+        properties:
+          abstractMessage:
+            $ref: "#/components/schemas/AbstractMessage"
+        required:
+        - "abstractMessage"
+      - type: "object"
+        properties:
+          messageReason:
+            $ref: "#/components/schemas/MessageReason"
+      - type: "object"
+        properties:
+          wasRevised:
+            type: "boolean"
+            description: "Indicates if the message was revised by the sender as part of validating the response by the sender."
+    TimingType:
+      description: "The type of timing."
+      type: "string"
+      enum:
+      - "RecurringTiming"
+      - "DeferredTiming"
+      example: "RecurringTiming"
+    PaymentResult:
+      description: "Payment Result"
+      allOf:
+      - $ref: "#/components/schemas/AbstractPaymentResponse"
+      - type: "object"
+        properties:
+          paymentStatus:
+            $ref: "#/components/schemas/PaymentStatus"
+          errors:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/PaymentError"
+        required:
+        - "paymentStatus"
+    PhoneCallAction:
+      description: "An action to make a phone call"
+      allOf:
+      - $ref: "#/components/schemas/AbstractAction"
+      - type: "object"
+        properties:
+          phoneNumber:
+            type: "string"
+        required:
+        - "phoneNumber"
+    PaymentErrorCode:
+      description: "Error codes for payment failures"
+      type: "string"
+      enum:
+      - "ShippingContactInvalid"
+      - "BillingContactInvalid"
+      - "AddressUnserviceable"
+      - "CouponCodeInvalid"
+      - "CouponCodeExpired"
+      - "Unknown"
+      example: "ShippingContactInvalid"
+    OptionReference:
+      description: "Deprecated. Replaced by OptionValue and ReferenceValue."
+      additionalProperties: false
+      type: "object"
+      properties:
+        optionId:
+          $ref: "#/components/schemas/UniqueId"
+        referenceId:
+          $ref: "#/components/schemas/UniqueId"
+      required:
+      - "optionId"
+      - "referenceId"
+      deprecated: true
+    PaymentRequestMessageDefinition:
+      description: "References to a layout of payment request"
+      allOf:
+      - $ref: "#/components/schemas/AbstractPaymentRequest"
+      - type: "object"
+        properties:
+          parameters:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/NamedValue"
+          messageDefinitionNameOrId:
+            $ref: "#/components/schemas/MessageDefinitionNameOrId"
+          targetLocale:
+            $ref: "#/components/schemas/Locale"
+            description: "The requested locale the message should be translated into"
+            example: "en-US"
+        required:
+        - "messageDefinitionNameOrId"
+    AbstractAuthenticationRequest:
+      type: "object"
+      properties:
+        formatType:
+          $ref: "#/components/schemas/FormatType"
+      required:
+      - "formatType"
+      discriminator:
+        propertyName: "formatType"
+        mapping:
+          MessageDefinition: "#/components/schemas/AuthenticationRequestMessageDefinition"
+          EncryptedOAuthToken: "#/components/schemas/AuthenticationRequestEncryptedOAuthToken"
+    PaymentInitiationPix:
+      additionalProperties: false
+      type: "object"
+      properties:
+        keyType:
+          $ref: "#/components/schemas/PaymentPixKeyType"
+        key:
+          type: "string"
+          description: "Pix key value (per keyType)."
+        code:
+          type: "string"
+          description: "EMVCo Pix 'Copia e Cola' string."
+      required:
+      - "code"
+      - "keyType"
+      - "key"
+    FlagLower:
+      description: "A flag Lower entry"
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+    RoutingConfigurationType:
+      type: "string"
+      description: "Enum for Routing Configuration Type"
+      enum:
+      - "QueueRoutingType"
+      - "AgentRoutingType"
+    AbstractExperienceTypeFormResponse:
+      type: "object"
+      properties:
+        responseType:
+          $ref: "#/components/schemas/ExperienceTypeFormResponseType"
+      required:
+      - "responseType"
+      discriminator:
+        propertyName: "responseType"
+    ShippingMethodType:
+      description: "The type of shipping method."
+      type: "string"
+      enum:
+      - "PaymentRequestShippingMethod"
+      example: "PaymentRequestShippingMethod"
+    DisplayableOption:
+      description: "An option that is displayable without data lookup"
+      additionalProperties: false
+      type: "object"
+      properties:
+        alias:
+          type: "string"
+        optionId:
+          $ref: "#/components/schemas/UniqueId"
+          deprecated: true
+        title:
+          type: "string"
+        optionIdentifier:
+          $ref: "#/components/schemas/UniqueIdentifier"
+      required:
+      - "optionIdentifier"
+      - "title"
+      - "alias"
+    ChoicesMedia:
+      description: "Media links with options"
+      allOf:
+      - $ref: "#/components/schemas/AbstractChoices"
+      - type: "object"
+        properties:
+          mediaAsset:
+            $ref: "#/components/schemas/AbstractAsset"
+          optionItems:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/TitleOptionItem"
+        required:
+        - "mediaAsset"
+        - "optionItems"
+    AbstractApplication:
+      description: "A link to an application."
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        identifier:
+          type: "string"
+        applicationType:
+          $ref: "#/components/schemas/ApplicationType"
+        arguments:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/NamedValue"
+        developerId:
+          type: "string"
+          example: "Apple imessage team id"
+      required:
+      - "name"
+      - "identifier"
+      - "developerId"
+      - "applicationType"
+      discriminator:
+        propertyName: "applicationType"
+    InputId:
+      type: "string"
+      description: "An id that uniquely identifies an input in a form message"
+    AbstractOAuthAuthorizationRequest:
+      type: "object"
+      properties:
+        requestType:
+          $ref: "#/components/schemas/OAuthAuthorizationRequestType"
+        state:
+          type: "string"
+        scope:
+          type: "string"
+      required:
+      - "requestType"
+      discriminator:
+        propertyName: "requestType"
+        mapping:
+          OAuthCodeDelegatedExchangeAuthorizationRequest: "#/components/schemas/OAuthCodeDelegatedExchangeAuthorizationRequest"
+    TemplateSectionTypes:
+      description: "Types of sections or defined areas on a template"
+      type: "string"
+      enum:
+      - "HeaderTemplateSection"
+      - "BodyTemplateSection"
+      - "LinkTemplateSection"
+      - "PromotionalOfferTemplateSection"
+      - "OrderStatusTemplateSection"
+      example: "HeaderTemplateSection"
+    CompleteFormAction:
+      description: "A complete action"
+      allOf:
+      - $ref: "#/components/schemas/AbstractFormAction"
+    AbstractInput:
+      description: "Common attributes for all input types"
+      type: "object"
+      properties:
+        inputType:
+          $ref: "#/components/schemas/InputType"
+        id:
+          $ref: "#/components/schemas/InputId"
+        label:
+          $ref: "#/components/schemas/AbstractTitleItem"
+        hintText:
+          type: "string"
+        required:
+          type: "boolean"
+      required:
+      - "inputType"
+      - "id"
+      discriminator:
+        propertyName: "inputType"
+    AbstractFormIntroScreen:
+      description: "Common base for all form introduction screen types"
+      type: "object"
+      properties:
+        screenType:
+          $ref: "#/components/schemas/FormIntroScreenType"
+      required:
+      - "screenType"
+      discriminator:
+        propertyName: "screenType"
+    ValueType:
+      type: "string"
+      description: "The type of a value"
+      enum:
+      - "TextValue"
+      - "BooleanValue"
+      - "IntegerValue"
+      - "DoubleValue"
+      - "UrlValue"
+      - "DateValue"
+      - "DateTimeValue"
+      - "ReferenceValue"
+      - "ImageReferenceValue"
+      - "ListValue"
+      - "CompositeValue"
+      - "LocationValue"
+      - "AssetReferenceValue"
+      - "ExperienceTypeValue"
+      - "StructuredValue"
+      - "PaymentLineItemValue"
+      - "ShippingMethodValue"
+      - "CurrencyAmountValue"
+      - "DiscountValue"
+      - "OrderContextValue"
+      - "PaymentInitiationValue"
+    VideoAsset:
+      description: "A video asset of a message."
+      allOf:
+      - $ref: "#/components/schemas/AbstractAsset"
+    AbstractAttachmentUploadResult:
+      description: "The result of an attachment upload."
+      type: "object"
+      properties:
+        resultType:
+          $ref: "#/components/schemas/AttachmentUploadResultType"
+      required:
+      - "resultType"
+      discriminator:
+        propertyName: "resultType"
+        mapping:
+          CompletedAttachmentUploadResult: "#/components/schemas/CompletedAttachmentUploadResult"
+          ErrorAttachmentUploadResult: "#/components/schemas/ErrorAttachmentUploadResult"
+          PendingAttachmentUploadResult: "#/components/schemas/PendingAttachmentUploadResult"
+    ChoicesResponseSelections:
+      description: "The selections to a choices message"
+      allOf:
+      - $ref: "#/components/schemas/AbstractChoicesResponse"
+      - type: "object"
+        properties:
+          selectedOptions:
+            type: "array"
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/SelectedOption"
+        required:
+        - "selectedOptions"
+    FormatType:
+      description: "The rendering format of a message. How it looks."
+      type: "string"
+      enum:
+      - "Attachments"
+      - "RichLink"
+      - "Media"
+      - "Buttons"
+      - "Carousel"
+      - "QuickReplies"
+      - "ListPicker"
+      - "Selections"
+      - "Links"
+      - "TimePicker"
+      - "Application"
+      - "Result"
+      - "Inputs"
+      - "WebView"
+      - "Text"
+      - "ExperienceType"
+      - "Flow"
+      - "MessageDefinition"
+      - "References"
+      - "DisplayableOptions"
+      - "EncryptedOAuthToken"
+      - "Payment"
+      - "ExternalTemplate"
+      - "ErrorMessage"
+      - "CancelAction"
+      - "ConfirmMessage"
+      - "ExtendedText"
+      example: "Attachments"
+    PaymentRequestContactField:
+      description: "Allowed contact fields for a payment request."
+      type: "string"
+      enum:
+      - "Email"
+      - "Name"
+      - "Phone"
+      - "PostalAddress"
+      - "PhoneticName"
+      example: "Email"
+    LogicalCondition:
+      allOf:
+      - $ref: "#/components/schemas/AbstractConditionExpression"
+      - description: "Logical combination of conditions"
+        type: "object"
+        properties:
+          conditions:
+            minItems: 2
+            description: "list of operands that will be used with operator"
+            type: "array"
+            items:
+              $ref: "#/components/schemas/AbstractConditionExpression"
+          operator:
+            description: "Logical operator to be applied"
+            $ref: "#/components/schemas/LogicalOperator"
+        required:
+        - "operator"
+        - "conditions"
+    AssetType:
+      type: "string"
+      description: "The type of an asset"
+      enum:
+      - "ImageAsset"
+      - "VideoAsset"
+      - "DocumentAsset"
+    ConversationEntry:
+      type: "object"
+      properties:
+        senderDisplayName:
+          type: "string"
+        identifier:
+          type: "string"
+        entryType:
+          $ref: "#/components/schemas/EntryType"
+        entryPayload:
+          type: "string"
+        sender:
+          $ref: "#/components/schemas/Participant"
+        visibilityStrategy:
+          $ref: "#/components/schemas/VisibilityStrategy"
+        transcriptedTimestamp:
+          type: "integer"
+          format: "int64"
+        relatedRecords:
+          type: "array"
+          items:
+            type: "string"
+        clientTimestamp:
+          type: "integer"
+          format: "int64"
+        clientDuration:
+          type: "integer"
+          format: "int64"
+      required:
+      - "identifier"
+      - "sender"
+      - "clientTimestamp"
+      - "clientDuration"
+      - "transcriptedTimestamp"
+      - "entryType"
+      - "entryPayload"
+    OrderStatusTemplateSection:
+      description: "Order status section of the template"
+      allOf:
+      - $ref: "#/components/schemas/AbstractTemplateSection"
+      - type: "object"
+        properties:
+          orderStatusUpdate:
+            $ref: "#/components/schemas/OrderStatusUpdate"
+        required:
+        - "orderStatusUpdate"
+    StaticTitle:
+      description: "The title object that can be placed anywhere on a section"
+      allOf:
+      - $ref: "#/components/schemas/AbstractInput"
+      - type: "object"
+        properties:
+          titleItem:
+            $ref: "#/components/schemas/TitleItem"
+    PaymentResponseMessage:
+      description: "Payment Response message"
+      allOf:
+      - $ref: "#/components/schemas/AbstractMessage"
+      - type: "object"
+        properties:
+          paymentResponse:
+            $ref: "#/components/schemas/AbstractPaymentResponse"
+          referenceId:
+            $ref: "#/components/schemas/UniqueId"
+            description: "Used to correlate the payment status with the actual payment message"
+        required:
+        - "paymentResponse"
+    AbstractTimeSlotItem:
+      description: "The base type of a time slot"
+      type: "object"
+      properties:
+        duration:
+          type: "integer"
+          description: "The duration of the time slot in seconds."
+          example: 3600
+        itemType:
+          $ref: "#/components/schemas/TimeSlotItemType"
+        startTime:
+          type: "string"
+          format: "date-time"
+          example: "2021-02-25T14:00:00Z"
+        referenceId:
+          $ref: "#/components/schemas/UniqueId"
+      required:
+      - "itemType"
+      - "startTime"
+      - "duration"
+      discriminator:
+        propertyName: "itemType"
+    SessionContextType:
+      type: "string"
+      description: "The type of session context event"
+      enum:
+      - "SessionContextSet"
+    TitleLinkItem:
+      allOf:
+      - $ref: "#/components/schemas/AbstractTitleInteractionItem"
+      - type: "object"
+        properties:
+          url:
+            $ref: "#/components/schemas/Url"
+        required:
+        - "url"
