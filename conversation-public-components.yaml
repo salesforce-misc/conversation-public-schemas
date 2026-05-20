@@ -1,7 +1,7 @@
 asyncapi: "1.0.0"
 info:
   title: "Conversation Entry Payload Schema"
-  version: "0.0.2"
+  version: "0.0.3"
   description: "Conversation Entry Payload Schema for Salesforce Enhanced Channels"
 
 components:
@@ -411,6 +411,12 @@ components:
           $ref: "#/components/schemas/InputType"
         label:
           $ref: "#/components/schemas/AbstractTitleItem"
+        onDeselect:
+          $ref: "#/components/schemas/AbstractFormAction"
+          description: "Action triggered when the user deselects a value. Allowed types depend on the input subtype; constraints are enforced by backend validation, not the schema."
+        onSelect:
+          $ref: "#/components/schemas/AbstractFormAction"
+          description: "Action triggered when the user selects a value. Allowed types depend on the input subtype; constraints are enforced by backend validation, not the schema."
         required:
           type: "boolean"
       required:
@@ -468,6 +474,26 @@ components:
       - "itemType"
       - "name"
       type: "object"
+    AbstractMediaUploadInput:
+      allOf:
+      - $ref: "#/components/schemas/AbstractInput"
+      - properties:
+          maxFileSizeKb:
+            description: "Maximum file size in KB. Limits are validated at runtime against current provider constraints."
+            minimum: 1
+            type: "integer"
+          maxUploadedFiles:
+            description: "Maximum number of files allowed. Must be >= minUploadedFiles. Limits are validated at runtime against current provider constraints."
+            minimum: 1
+            type: "integer"
+          minUploadedFiles:
+            description: "Minimum number of files required. Limits are validated at runtime against current provider constraints."
+            minimum: 0
+            type: "integer"
+        type: "object"
+      description: "Common base for media upload inputs (photos or documents)"
+      discriminator:
+        propertyName: "inputType"
     AbstractMessage:
       description: "Base definition for all message types"
       discriminator:
@@ -486,6 +512,9 @@ components:
           PaymentResponseMessage: "#/components/schemas/PaymentResponseMessage"
           PaymentStatusMessage: "#/components/schemas/PaymentStatusMessage"
           StaticContentMessage: "#/components/schemas/StaticContentMessage"
+          SurveyChoicesMessage: "#/components/schemas/SurveyChoicesMessage"
+          SurveyChoicesResponseMessage: "#/components/schemas/SurveyChoicesResponseMessage"
+          SurveyStaticContentMessage: "#/components/schemas/SurveyStaticContentMessage"
         propertyName: "messageType"
       properties:
         contentCategory:
@@ -683,6 +712,10 @@ components:
       required:
       - "formatType"
       type: "object"
+    AbstractSurveyMessage:
+      allOf:
+      - $ref: "#/components/schemas/AbstractMessage"
+      description: "Base for all outbound survey message types."
     AbstractTemplateSection:
       description: "Sections or defined areas in a template"
       discriminator:
@@ -1152,6 +1185,7 @@ components:
       - "Decline"
       - "Cancel"
       - "EndUserEnded"
+      - "EndUserAbandoned"
       type: "string"
     CardCarouselSection:
       description: "Represents a single carousel card."
@@ -1195,8 +1229,6 @@ components:
           type: "string"
         featuredProductId:
           type: "string"
-      required:
-      - "catalogId"
       type: "object"
     CatalogMessage:
       allOf:
@@ -1714,6 +1746,9 @@ components:
         modality:
           $ref: "#/components/schemas/Modality"
           description: "The modality in which the entry was created"
+        parentId:
+          description: "The identifier of the parent entry if this entry is a reply. Optional."
+          type: "string"
         recipients:
           $ref: "#/components/schemas/Recipients"
         relatedRecords:
@@ -1812,6 +1847,17 @@ components:
       - "None"
       - "Survey"
       type: "string"
+    DataExchangeFormAction:
+      allOf:
+      - $ref: "#/components/schemas/AbstractFormAction"
+      - properties:
+          payload:
+            description: "Named values to send to the endpoint. Each value may be a static literal or a reference to form/screen data."
+            items:
+              $ref: "#/components/schemas/NamedDynamicValue"
+            type: "array"
+        type: "object"
+      description: "An action that sends data to the flow endpoint for server-side processing"
     DataSchema:
       description: "A recursive schema for a data field, supporting primitive and complex types like nested objects and arrays."
       properties:
@@ -1976,6 +2022,18 @@ components:
       allOf:
       - $ref: "#/components/schemas/AbstractAsset"
       description: "A document asset of a message."
+    DocumentMediaUploadInput:
+      allOf:
+      - $ref: "#/components/schemas/AbstractMediaUploadInput"
+      - properties:
+          allowedMimeTypes:
+            description: "Allowed MIME types for document uploads."
+            items:
+              $ref: "#/components/schemas/MimeType"
+            minItems: 1
+            type: "array"
+        type: "object"
+      description: "An input for uploading documents."
     DoubleValue:
       allOf:
       - $ref: "#/components/schemas/AbstractValue"
@@ -2408,6 +2466,8 @@ components:
       enum:
       - "NavigateFormAction"
       - "CompleteFormAction"
+      - "DataExchangeFormAction"
+      - "UpdateDataFormAction"
       type: "string"
     FormError:
       properties:
@@ -2474,6 +2534,12 @@ components:
               $ref: "#/components/schemas/DataSchema"
             description: "Dynamic data model for this screen, defined as a map of field names to their respective schemas."
             type: "object"
+          endpointEnabled:
+            description: "Whether this flow calls an endpoint for server-side processing. When false, the flow is static and no endpoint is invoked."
+            type: "boolean"
+          endpointUrl:
+            $ref: "#/components/schemas/Url"
+            description: "External endpoint URL for server-side processing. When omitted, the Salesforce Apex-based endpoint is used instead."
           entrySectionId:
             description: "Optional id of entry screen to navigate to on launch."
             type: "string"
@@ -2859,6 +2925,8 @@ components:
       - "TextInput"
       - "StaticFooter"
       - "StaticTitle"
+      - "PhotoMediaUploadInput"
+      - "DocumentMediaUploadInput"
       type: "string"
     InputValueType:
       enum:
@@ -3062,6 +3130,9 @@ components:
       - "FormMessage"
       - "FormResponseMessage"
       - "StaticContentMessage"
+      - "SurveyChoicesMessage"
+      - "SurveyChoicesResponseMessage"
+      - "SurveyStaticContentMessage"
       - "AuthenticationRequestMessage"
       - "AuthenticationResponseMessage"
       - "PaymentRequestMessage"
@@ -3131,6 +3202,18 @@ components:
         - "components"
         type: "object"
       description: "A form section with multiple input fields and optional non input components."
+    NamedDynamicValue:
+      additionalProperties: false
+      description: "A named DynamicValue. Used in action payloads where each entry may be a literal or a runtime reference to form/screen data."
+      properties:
+        name:
+          type: "string"
+        value:
+          $ref: "#/components/schemas/DynamicValue"
+      required:
+      - "name"
+      - "value"
+      type: "object"
     NamedValue:
       additionalProperties: false
       description: "A value with a unique name"
@@ -3579,7 +3662,6 @@ components:
       - "Agent"
       - "Supervisor"
       - "System"
-      - "DigitalWorker"
       - "Router"
       type: "string"
     PaymentCheckoutBehavior:
@@ -3834,6 +3916,9 @@ components:
             description: "Three-letter ISO 4217 currency code of payment."
             example: "USD"
             type: "string"
+          discount:
+            $ref: "#/components/schemas/Discount"
+            description: "Discount applicable on the complete order"
           endpoints:
             $ref: "#/components/schemas/PaymentRequestEndPoints"
           lineItems:
@@ -4183,6 +4268,22 @@ components:
         - "phoneNumber"
         type: "object"
       description: "An action to make a phone call"
+    PhotoMediaUploadInput:
+      allOf:
+      - $ref: "#/components/schemas/AbstractMediaUploadInput"
+      - properties:
+          photoSource:
+            $ref: "#/components/schemas/PhotoSource"
+            description: "Source for photo capture."
+        type: "object"
+      description: "An input for capturing or selecting photos."
+    PhotoSource:
+      description: "Source for photo capture"
+      enum:
+      - "Camera"
+      - "Gallery"
+      - "CameraGallery"
+      type: "string"
     PostalAddress:
       description: "Object representing a mailing address"
       properties:
@@ -4513,6 +4614,9 @@ components:
           skipRouterCPRemovalIfNoRoutingFailures:
             description: "Indicates whether the router CP removal should be skipped if there are no routing failures"
             type: "boolean"
+          workId:
+            description: "Work SFDC record ID"
+            type: "string"
           workOwnerId:
             description: "The SFDC Id of user who is requesting cancellation"
             type: "string"
@@ -4533,6 +4637,10 @@ components:
       allOf:
       - $ref: "#/components/schemas/AbstractEntry"
       - properties:
+          acknowledgeTime:
+            description: "Time when the bot acknowledged the work"
+            format: "int64"
+            type: "integer"
           agentGroupIds:
             description: "GroupId for the assigned agent"
             items:
@@ -4544,11 +4652,21 @@ components:
           botId:
             description: "Bot assigned work"
             type: "string"
+          botType:
+            description: "Type of bot handling the work"
+            type: "string"
           errorMessages:
             description: "Error occurred while routing the work"
             items:
               type: "string"
             type: "array"
+          failedTime:
+            description: "Time when the work was failed"
+            format: "int64"
+            type: "integer"
+          isDirectWork:
+            description: "Whether the work was routed directly to a bot without PSR or WorkAssigned"
+            type: "boolean"
           queueId:
             description: "Queue assigned work"
             type: "string"
@@ -4565,7 +4683,6 @@ components:
             $ref: "#/components/schemas/RoutingWorkType"
             description: "Work event type"
         required:
-        - "conversationId"
         - "workId"
         - "workTargetId"
         - "workType"
@@ -4575,12 +4692,14 @@ components:
     RoutingWorkType:
       description: "work event type"
       enum:
+      - "Acknowledged"
       - "Assigned"
       - "Accepted"
       - "Cancelled"
       - "Closed"
       - "Declined"
       - "Escalated"
+      - "Failed"
       - "TransferError"
       - "Transferred"
       type: "string"
@@ -5232,6 +5351,36 @@ components:
         - "value"
         type: "object"
       description: "A value containing an arbitrary JSON object"
+    SurveyChoicesMessage:
+      allOf:
+      - $ref: "#/components/schemas/AbstractSurveyMessage"
+      - properties:
+          choices:
+            $ref: "#/components/schemas/AbstractChoices"
+        required:
+        - "choices"
+        type: "object"
+      description: "MT survey message with choices (QuickReplies, Buttons, ListPicker, etc.)"
+    SurveyChoicesResponseMessage:
+      allOf:
+      - $ref: "#/components/schemas/AbstractMessage"
+      - properties:
+          choicesResponse:
+            $ref: "#/components/schemas/AbstractChoicesResponse"
+        required:
+        - "choicesResponse"
+        type: "object"
+      description: "MO response to a survey choices message. Linked to the original survey via inReplyToMessageId."
+    SurveyStaticContentMessage:
+      allOf:
+      - $ref: "#/components/schemas/AbstractSurveyMessage"
+      - properties:
+          staticContent:
+            $ref: "#/components/schemas/AbstractStaticContent"
+        required:
+        - "staticContent"
+        type: "object"
+      description: "MT survey message with static content (e.g. survey link, thank you message)."
     SwitchCase:
       description: "A single case in a switch statement with its value and components"
       properties:
@@ -5555,6 +5704,15 @@ components:
       description: "An string identifier that identifies objects or items uniquely per message instance"
       example: "7c4cce61-df7a-4a5b-a949-3d6e3ea278b5"
       type: "string"
+    UpdateDataFormAction:
+      allOf:
+      - $ref: "#/components/schemas/AbstractFormAction"
+      - properties:
+          payload:
+            description: "JSON-encoded string containing static key-value pairs to write into the current screen's data. Keys match screen data field names. Values are literal primitives, arrays, or objects — runtime form/data references are not supported. The downstream service translates this into the provider's native payload."
+            type: "string"
+        type: "object"
+      description: "An action that updates current screen state with pre-computed static values without calling the endpoint"
     Url:
       description: "A url"
       type: "string"
