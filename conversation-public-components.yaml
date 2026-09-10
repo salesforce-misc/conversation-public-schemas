@@ -1,7 +1,7 @@
 asyncapi: "1.0.0"
 info:
   title: "Conversation Entry Payload Schema"
-  version: "0.0.2"
+  version: "0.0.3"
   description: "Conversation Entry Payload Schema for Salesforce Enhanced Channels"
 
 components:
@@ -15,9 +15,32 @@ components:
           $ref: "#/components/schemas/ActionType"
         label:
           type: "string"
+        postbackData:
+          description: "Opaque data sent back when the user invokes this action."
+          maxLength: 2048
+          type: "string"
       required:
       - "actionType"
       - "label"
+      type: "object"
+    AbstractActionPayload:
+      description: "Base definition for all action types. The schema is determined by the actionType discriminator."
+      discriminator:
+        mapping:
+          DeliveryAck: "#/components/schemas/DeliveryActionPayload"
+          Feedback: "#/components/schemas/FeedbackActionPayload"
+          Reaction: "#/components/schemas/ReactionActionPayload"
+          ReadAck: "#/components/schemas/ReadActionPayload"
+          Sdr: "#/components/schemas/SdrActionPayload"
+          Translation: "#/components/schemas/TranslationActionPayload"
+        propertyName: "actionType"
+      properties:
+        actionType:
+          $ref: "#/components/schemas/ConversationActionType"
+        id:
+          $ref: "#/components/schemas/ActionId"
+      required:
+      - "actionType"
       type: "object"
     AbstractApplication:
       description: "A link to an application."
@@ -143,6 +166,7 @@ components:
     AbstractChoices:
       discriminator:
         mapping:
+          BusinessUpdate: "#/components/schemas/ChoicesBusinessUpdate"
           Buttons: "#/components/schemas/ChoicesButtons"
           Carousel: "#/components/schemas/ChoicesCarousel"
           ConfirmMessage: "#/components/schemas/ChoicesConfirmMessage"
@@ -152,6 +176,7 @@ components:
           Media: "#/components/schemas/ChoicesMedia"
           MessageDefinition: "#/components/schemas/ChoicesMessageDefinition"
           QuickReplies: "#/components/schemas/ChoicesQuickReplies"
+          Suggestions: "#/components/schemas/ChoicesSuggestions"
           TimePicker: "#/components/schemas/ChoicesTimePicker"
         propertyName: "formatType"
       properties:
@@ -411,6 +436,12 @@ components:
           $ref: "#/components/schemas/InputType"
         label:
           $ref: "#/components/schemas/AbstractTitleItem"
+        onDeselect:
+          $ref: "#/components/schemas/AbstractFormAction"
+          description: "Action triggered when the user deselects a value. Allowed types depend on the input subtype; constraints are enforced by backend validation, not the schema."
+        onSelect:
+          $ref: "#/components/schemas/AbstractFormAction"
+          description: "Action triggered when the user selects a value. Allowed types depend on the input subtype; constraints are enforced by backend validation, not the schema."
         required:
           type: "boolean"
       required:
@@ -446,6 +477,9 @@ components:
       discriminator:
         propertyName: "itemType"
       properties:
+        address:
+          description: "Free-form postal address."
+          type: "string"
         itemType:
           $ref: "#/components/schemas/LocationItemType"
         latitude:
@@ -466,8 +500,27 @@ components:
           $ref: "#/components/schemas/UniqueId"
       required:
       - "itemType"
-      - "name"
       type: "object"
+    AbstractMediaUploadInput:
+      allOf:
+      - $ref: "#/components/schemas/AbstractInput"
+      - properties:
+          maxFileSizeKb:
+            description: "Maximum file size in KB. Limits are validated at runtime against current provider constraints."
+            minimum: 1
+            type: "integer"
+          maxUploadedFiles:
+            description: "Maximum number of files allowed. Must be >= minUploadedFiles. Limits are validated at runtime against current provider constraints."
+            minimum: 1
+            type: "integer"
+          minUploadedFiles:
+            description: "Minimum number of files required. Limits are validated at runtime against current provider constraints."
+            minimum: 0
+            type: "integer"
+        type: "object"
+      description: "Common base for media upload inputs (photos or documents)"
+      discriminator:
+        propertyName: "inputType"
     AbstractMessage:
       description: "Base definition for all message types"
       discriminator:
@@ -486,6 +539,9 @@ components:
           PaymentResponseMessage: "#/components/schemas/PaymentResponseMessage"
           PaymentStatusMessage: "#/components/schemas/PaymentStatusMessage"
           StaticContentMessage: "#/components/schemas/StaticContentMessage"
+          SurveyChoicesMessage: "#/components/schemas/SurveyChoicesMessage"
+          SurveyChoicesResponseMessage: "#/components/schemas/SurveyChoicesResponseMessage"
+          SurveyStaticContentMessage: "#/components/schemas/SurveyStaticContentMessage"
         propertyName: "messageType"
       properties:
         contentCategory:
@@ -671,6 +727,7 @@ components:
           ExtendedText: "#/components/schemas/StaticContentExtendedText"
           ExternalTemplate: "#/components/schemas/StaticContentExternalTemplate"
           Links: "#/components/schemas/StaticContentLinks"
+          Location: "#/components/schemas/StaticContentLocation"
           Media: "#/components/schemas/StaticContentMedia"
           MessageDefinition: "#/components/schemas/StaticContentMessageDefinition"
           RichLink: "#/components/schemas/StaticContentRichLink"
@@ -683,6 +740,10 @@ components:
       required:
       - "formatType"
       type: "object"
+    AbstractSurveyMessage:
+      allOf:
+      - $ref: "#/components/schemas/AbstractMessage"
+      description: "Base for all outbound survey message types."
     AbstractTemplateSection:
       description: "Sections or defined areas in a template"
       discriminator:
@@ -808,6 +869,10 @@ components:
       required:
       - "valueType"
       type: "object"
+    ActionId:
+      description: "UUID that references this action"
+      example: "f7904eb6-5352-4c5e-adf6-5f100572cf5d"
+      type: "string"
     ActionInvocation:
       description: "Typed action plus free-form parameters for execution."
       properties:
@@ -834,6 +899,11 @@ components:
       - "CopyCodeAction"
       - "TextReplyAction"
       - "FlowAction"
+      - "RequestContactInfoAction"
+      - "ViewLocationAction"
+      - "ShareLocationAction"
+      - "CreateCalendarEventAction"
+      - "AuthenticationAction"
       type: "string"
     ActionsContentSection:
       allOf:
@@ -941,6 +1011,16 @@ components:
       - "PendingAttachmentUploadResult"
       - "ErrorAttachmentUploadResult"
       type: "string"
+    AuthenticationAction:
+      allOf:
+      - $ref: "#/components/schemas/AbstractAction"
+      - properties:
+          otpType:
+            $ref: "#/components/schemas/AuthenticationOtpType"
+        required:
+        - "otpType"
+        type: "object"
+      description: "An action for an Authentication template OTP button. The button label is carried on AbstractAction.label."
     AuthenticationError:
       description: "Authentication Error Details"
       properties:
@@ -963,6 +1043,14 @@ components:
       - "TemporarilyUnavailable"
       - "ApexError"
       example: "InvalidAuthenticationRequest"
+      type: "string"
+    AuthenticationOtpType:
+      description: "The OTP delivery type for an Authentication template button."
+      enum:
+      - "CopyCode"
+      - "OneTap"
+      - "ZeroTap"
+      example: "CopyCode"
       type: "string"
     AuthenticationRequestEncryptedOAuthToken:
       allOf:
@@ -1071,10 +1159,27 @@ components:
       - "Error"
       example: "Authenticated"
       type: "string"
+    AuthenticationTemplateSection:
+      allOf:
+      - $ref: "#/components/schemas/AbstractTemplateSection"
+      - properties:
+          parameters:
+            description: "Ordered list of parameters with their type and value defined."
+            items:
+              $ref: "#/components/schemas/AbstractValue"
+            minItems: 1
+            type: "array"
+        required:
+        - "parameters"
+        type: "object"
+      description: "Runtime binding for an Authentication template OTP button."
     BodyContentSection:
       allOf:
       - $ref: "#/components/schemas/AbstractContentSection"
       - properties:
+          addSecurityRecommendation:
+            description: "Whether to show a security recommendation in the body (Authentication templates)."
+            type: "boolean"
           bodyContents:
             items:
               $ref: "#/components/schemas/AbstractContent"
@@ -1152,6 +1257,7 @@ components:
       - "Decline"
       - "Cancel"
       - "EndUserEnded"
+      - "EndUserAbandoned"
       type: "string"
     CardCarouselSection:
       description: "Represents a single carousel card."
@@ -1195,8 +1301,6 @@ components:
           type: "string"
         featuredProductId:
           type: "string"
-      required:
-      - "catalogId"
       type: "object"
     CatalogMessage:
       allOf:
@@ -1253,6 +1357,43 @@ components:
         - "catalogSection"
         type: "object"
       description: "A catalog section value"
+    ChoicesBusinessUpdate:
+      allOf:
+      - $ref: "#/components/schemas/AbstractChoices"
+      - properties:
+          brandLogo:
+            description: "Base64-encoded PNG shown on the invitation card. Template parameter for binaryChoice.engage.withImage."
+            example: "iVBORw0KGgoAAAANSUhEUgAA..."
+            type: "string"
+          brandLogoAsset:
+            $ref: "#/components/schemas/ImageAsset"
+          brandName:
+            description: "Brand name shown on the invitation card. Template parameter for binaryChoice.engage.withImage."
+            example: "Acme Corp"
+            type: "string"
+          locale:
+            description: "Language code used to render the invitation (e.g. en-us). If omitted, Apple uses the template's default language."
+            example: "en-us"
+            type: "string"
+          referenceId:
+            description: "Business reference for the invitation (e.g. caseNumber, orderId). Echoed back in the user's response. Must be <= 1000 characters and must not contain quote or apostrophe characters."
+            example: "caseNumber:1009273616"
+            maxLength: 1000
+            type: "string"
+          templateId:
+            default: "binaryChoice.engage.withImage"
+            description: "Apple's invitation template identifier. Currently fixed to binaryChoice.engage.withImage; this template renders exactly two buttons (accept / decline)."
+            enum:
+            - "binaryChoice.engage.withImage"
+            example: "binaryChoice.engage.withImage"
+            type: "string"
+        required:
+        - "templateId"
+        - "referenceId"
+        - "brandName"
+        - "brandLogo"
+        type: "object"
+      description: "Apple Business Update (invitation) message with two interactive options (accept / decline). The two-button structure is implicit in Apple's binaryChoice.engage.withImage template — Yes/No are rendered by Apple's client, not modeled as schema option items. Sent as an outbound MT to invite an end user into a conversation; the user's response comes back as a ChoicesResponseMessage tagged with customHandlingType=InvitationResponse and selectedOptions = [{optionIdentifier: \"urn:apple:invitation:accepted\"}] (Yes) or [{optionIdentifier: \"urn:apple:invitation:declined\"}] (No)."
     ChoicesButtons:
       allOf:
       - $ref: "#/components/schemas/AbstractChoices"
@@ -1490,6 +1631,35 @@ components:
         - "selectedOptions"
         type: "object"
       description: "The selections to a choices message"
+    ChoicesSuggestions:
+      allOf:
+      - $ref: "#/components/schemas/AbstractChoices"
+      - properties:
+          attachments:
+            deprecated: true
+            description: "Deprecated. Use mediaAssets instead."
+            items:
+              $ref: "#/components/schemas/Attachment"
+            minItems: 1
+            type: "array"
+          mediaAssets:
+            items:
+              $ref: "#/components/schemas/AbstractAsset"
+            minItems: 1
+            type: "array"
+          suggestions:
+            description: "Suggestion chips displayed below the content (max 11)."
+            items:
+              $ref: "#/components/schemas/AbstractAction"
+            maxItems: 11
+            minItems: 1
+            type: "array"
+          text:
+            $ref: "#/components/schemas/Text"
+        required:
+        - "suggestions"
+        type: "object"
+      description: "Content with interactive suggestion chips. Carries optional text and/or media assets with required suggestion chips displayed below the content. Used by channels such as RCS that support a chip strip below a text or file message."
     ChoicesTimePicker:
       allOf:
       - $ref: "#/components/schemas/AbstractChoices"
@@ -1561,6 +1731,39 @@ components:
       enum:
       - "Link"
       type: "string"
+    ClientAction:
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+      - properties:
+          actions:
+            items:
+              $ref: "#/components/schemas/ClientActionItem"
+            maxItems: 5
+            minItems: 1
+            type: "array"
+          message:
+            type: "string"
+        required:
+        - "actions"
+        type: "object"
+      description: "A client action entry that triggers background behavior on the host page"
+    ClientActionItem:
+      properties:
+        consentMessage:
+          type: "string"
+        consentRequired:
+          default: true
+          type: "boolean"
+        name:
+          type: "string"
+        order:
+          type: "integer"
+        properties:
+          additionalProperties: true
+          type: "object"
+      required:
+      - "name"
+      type: "object"
     CommandExperienceType:
       allOf:
       - $ref: "#/components/schemas/AbstractCommand"
@@ -1696,7 +1899,36 @@ components:
       enum:
       - "TextContent"
       - "AssetContent"
+      - "LocationContent"
       type: "string"
+    ConversationAction:
+      description: "Represents a conversation action performed on a conversation entry"
+      properties:
+        actionId:
+          type: "string"
+        actionInitiatedAt:
+          format: "int64"
+          type: "integer"
+        actionPayload:
+          type: "string"
+        actionType:
+          $ref: "#/components/schemas/ConversationActionType"
+        conversationEntryIdentifier:
+          type: "string"
+        performedBy:
+          $ref: "#/components/schemas/Participant"
+        serverReceivedTimestamp:
+          format: "int64"
+          type: "integer"
+      required:
+      - "conversationEntryIdentifier"
+      - "actionId"
+      - "actionType"
+      - "actionInitiatedAt"
+      - "serverReceivedTimestamp"
+      - "actionPayload"
+      - "performedBy"
+      type: "object"
     ConversationEntry:
       properties:
         clientDuration:
@@ -1714,6 +1946,9 @@ components:
         modality:
           $ref: "#/components/schemas/Modality"
           description: "The modality in which the entry was created"
+        parentId:
+          description: "The identifier of the parent entry if this entry is a reply. Optional."
+          type: "string"
         recipients:
           $ref: "#/components/schemas/Recipients"
         relatedRecords:
@@ -1780,6 +2015,32 @@ components:
         - "code"
         type: "object"
       description: "An action to copy a code"
+    CreateCalendarEventAction:
+      allOf:
+      - $ref: "#/components/schemas/AbstractAction"
+      - properties:
+          description:
+            description: "Optional description of the calendar event."
+            type: "string"
+          endTime:
+            description: "End time of the event in RFC 3339 date-time format."
+            example: "2026-02-25T15:00:00Z"
+            format: "date-time"
+            type: "string"
+          startTime:
+            description: "Start time of the event in RFC 3339 date-time format."
+            example: "2026-02-25T14:00:00Z"
+            format: "date-time"
+            type: "string"
+          title:
+            description: "Title of the calendar event."
+            type: "string"
+        required:
+        - "title"
+        - "startTime"
+        - "endTime"
+        type: "object"
+      description: "An action that adds an event to the user's calendar."
     CurrencyAmount:
       description: "The base type for currency amounts"
       properties:
@@ -1811,7 +2072,19 @@ components:
       enum:
       - "None"
       - "Survey"
+      - "InvitationResponse"
       type: "string"
+    DataExchangeFormAction:
+      allOf:
+      - $ref: "#/components/schemas/AbstractFormAction"
+      - properties:
+          payload:
+            description: "Named values to send to the endpoint. Each value may be a static literal or a reference to form/screen data."
+            items:
+              $ref: "#/components/schemas/NamedDynamicValue"
+            type: "array"
+        type: "object"
+      description: "An action that sends data to the flow endpoint for server-side processing"
     DataSchema:
       description: "A recursive schema for a data field, supporting primitive and complex types like nested objects and arrays."
       properties:
@@ -1917,6 +2190,10 @@ components:
         - "deferredDate"
         type: "object"
       description: "Deferred Timing"
+    DeliveryActionPayload:
+      allOf:
+      - $ref: "#/components/schemas/AbstractActionPayload"
+      description: "A Delivery action payload"
     Discount:
       additionalProperties: false
       description: "Discount details for an order or line item."
@@ -1976,6 +2253,18 @@ components:
       allOf:
       - $ref: "#/components/schemas/AbstractAsset"
       description: "A document asset of a message."
+    DocumentMediaUploadInput:
+      allOf:
+      - $ref: "#/components/schemas/AbstractMediaUploadInput"
+      - properties:
+          allowedMimeTypes:
+            description: "Allowed MIME types for document uploads."
+            items:
+              $ref: "#/components/schemas/MimeType"
+            minItems: 1
+            type: "array"
+        type: "object"
+      description: "An input for uploading documents."
     DoubleValue:
       allOf:
       - $ref: "#/components/schemas/AbstractValue"
@@ -2079,16 +2368,19 @@ components:
       - "FlagRaise"
       - "FlagLower"
       - "EndUserConsentUpdated"
+      - "SessionOwnerChanged"
       - "SessionStatusChanged"
       - "ConsultConversationInfo"
       - "ConversationUpdated"
       - "ModalityConnection"
+      - "FileTransferRequest"
+      - "FileTransferCancelled"
+      - "ClientAction"
       - "MessageUpdated"
       - "TransferProgress"
       - "ParticipantsConferenced"
       - "SendTranscriptRequestReceived"
       - "SessionContext"
-      - "SessionOwnerChanged"
       type: "string"
     ErrorAttachmentUploadResult:
       allOf:
@@ -2288,6 +2580,10 @@ components:
           description: "language code for the external template"
           example: "ja"
           type: "string"
+        messageSendTtlSeconds:
+          description: "Time-to-live in seconds for sending the template message."
+          example: 600
+          type: "integer"
         name:
           description: "name of the template"
           example: "order_confirmation"
@@ -2318,6 +2614,67 @@ components:
       - "MediaCard"
       - "ProductCard"
       type: "string"
+    FeedbackActionPayload:
+      allOf:
+      - $ref: "#/components/schemas/AbstractActionPayload"
+      - properties:
+          details:
+            additionalProperties: true
+            description: "Additional details to provide as key value pairs. Optional. Max properties is 25. Example `{\"tags\":[\"incorrect\",\"incomplete\"]}`."
+            type: "object"
+          feedback:
+            $ref: "#/components/schemas/FeedbackType"
+            description: "Feedback rating, suggesting a thumbs up or thumbs down."
+          text:
+            description: "Textual representation of user feedback. Optional. Max length is 2000"
+            type: "string"
+        required:
+        - "feedback"
+        type: "object"
+      description: "A Feedback action payload for support message level feedback."
+    FeedbackType:
+      description: "Feedback Type. Possible values: GOOD, BAD"
+      enum:
+      - "GOOD"
+      - "BAD"
+      type: "string"
+    FileTransferCancelReason:
+      description: "Status of a file upload request. Indicates whether the request was cancelled by the agent or completed successfully. New values are additive (non-breaking)."
+      enum:
+      - "AgentCancelled"
+      - "FileTransferCompleted"
+      type: "string"
+    FileTransferCancelled:
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+      - properties:
+          fileTransferRequestEntryIdentifier:
+            description: "Identifier of the original FileTransferRequest entry being cancelled"
+            type: "string"
+          reason:
+            $ref: "#/components/schemas/FileTransferCancelReason"
+            description: "Reason for the cancellation. Optional; enumerated so clients can branch on the cancellation source. Today only the agent-initiated path is supported."
+        required:
+        - "fileTransferRequestEntryIdentifier"
+        type: "object"
+      description: "Cancellation of a previously issued file upload request"
+    FileTransferRequest:
+      allOf:
+      - $ref: "#/components/schemas/AbstractEntry"
+      - properties:
+          expirationTimestamp:
+            description: "Request expiry as epoch milliseconds (now + 30 min); mirrors the capability token's exp claim. Lets the end-user client drive expiry UX without decoding the JWT."
+            example: 1746379434000
+            format: "int64"
+            type: "integer"
+          fileTransferToken:
+            description: "Short-lived JWT authorising the end user to upload a file for this conversation"
+            type: "string"
+        required:
+        - "fileTransferToken"
+        - "expirationTimestamp"
+        type: "object"
+      description: "A request for the end user to upload a file"
     FlagLower:
       allOf:
       - $ref: "#/components/schemas/AbstractEntry"
@@ -2366,6 +2723,9 @@ components:
       allOf:
       - $ref: "#/components/schemas/AbstractContentSection"
       - properties:
+          codeExpirationMinutes:
+            description: "Minutes until the OTP code expires, shown in the footer (Authentication templates)."
+            type: "integer"
           footerContents:
             items:
               $ref: "#/components/schemas/AbstractContent"
@@ -2408,6 +2768,8 @@ components:
       enum:
       - "NavigateFormAction"
       - "CompleteFormAction"
+      - "DataExchangeFormAction"
+      - "UpdateDataFormAction"
       type: "string"
     FormError:
       properties:
@@ -2474,6 +2836,12 @@ components:
               $ref: "#/components/schemas/DataSchema"
             description: "Dynamic data model for this screen, defined as a map of field names to their respective schemas."
             type: "object"
+          endpointEnabled:
+            description: "Whether this flow calls an endpoint for server-side processing. When false, the flow is static and no endpoint is invoked."
+            type: "boolean"
+          endpointUrl:
+            $ref: "#/components/schemas/Url"
+            description: "External endpoint URL for server-side processing. When omitted, the Salesforce Apex-based endpoint is used instead."
           entrySectionId:
             description: "Optional id of entry screen to navigate to on launch."
             type: "string"
@@ -2701,6 +3069,7 @@ components:
       - "ExperienceType"
       - "Flow"
       - "MessageDefinition"
+      - "BusinessUpdate"
       - "References"
       - "DisplayableOptions"
       - "EncryptedOAuthToken"
@@ -2712,6 +3081,8 @@ components:
       - "ExtendedText"
       - "Catalog"
       - "InformationRequest"
+      - "Suggestions"
+      - "Location"
       example: "Attachments"
       type: "string"
     HeaderContentSection:
@@ -2859,6 +3230,8 @@ components:
       - "TextInput"
       - "StaticFooter"
       - "StaticTitle"
+      - "PhotoMediaUploadInput"
+      - "DocumentMediaUploadInput"
       type: "string"
     InputValueType:
       enum:
@@ -2938,6 +3311,10 @@ components:
       description: "A locale as defined by IETF BCP 47"
       example: "en-US"
       type: "string"
+    LocationContent:
+      allOf:
+      - $ref: "#/components/schemas/AbstractContent"
+      description: "Location content, used in a header content section. Marks the header as a location placeholder at template-registration time; actual latitude / longitude / name / address are bound at send-time via HeaderTemplateSection.parameters with a LocationValue."
     LocationItem:
       allOf:
       - $ref: "#/components/schemas/AbstractLocationItem"
@@ -3062,6 +3439,9 @@ components:
       - "FormMessage"
       - "FormResponseMessage"
       - "StaticContentMessage"
+      - "SurveyChoicesMessage"
+      - "SurveyChoicesResponseMessage"
+      - "SurveyStaticContentMessage"
       - "AuthenticationRequestMessage"
       - "AuthenticationResponseMessage"
       - "PaymentRequestMessage"
@@ -3131,6 +3511,18 @@ components:
         - "components"
         type: "object"
       description: "A form section with multiple input fields and optional non input components."
+    NamedDynamicValue:
+      additionalProperties: false
+      description: "A named DynamicValue. Used in action payloads where each entry may be a literal or a runtime reference to form/screen data."
+      properties:
+        name:
+          type: "string"
+        value:
+          $ref: "#/components/schemas/DynamicValue"
+      required:
+      - "name"
+      - "value"
+      type: "object"
     NamedValue:
       additionalProperties: false
       description: "A value with a unique name"
@@ -3579,7 +3971,6 @@ components:
       - "Agent"
       - "Supervisor"
       - "System"
-      - "DigitalWorker"
       - "Router"
       type: "string"
     PaymentCheckoutBehavior:
@@ -3834,6 +4225,9 @@ components:
             description: "Three-letter ISO 4217 currency code of payment."
             example: "USD"
             type: "string"
+          discount:
+            $ref: "#/components/schemas/Discount"
+            description: "Discount applicable on the complete order"
           endpoints:
             $ref: "#/components/schemas/PaymentRequestEndPoints"
           lineItems:
@@ -4102,6 +4496,9 @@ components:
             type: "array"
           paymentStatus:
             $ref: "#/components/schemas/PaymentStatus"
+          successMessage:
+            description: "Human-readable success context such as order reference and amount"
+            type: "string"
         required:
         - "paymentStatus"
         type: "object"
@@ -4183,6 +4580,22 @@ components:
         - "phoneNumber"
         type: "object"
       description: "An action to make a phone call"
+    PhotoMediaUploadInput:
+      allOf:
+      - $ref: "#/components/schemas/AbstractMediaUploadInput"
+      - properties:
+          photoSource:
+            $ref: "#/components/schemas/PhotoSource"
+            description: "Source for photo capture."
+        type: "object"
+      description: "An input for capturing or selecting photos."
+    PhotoSource:
+      description: "Source for photo capture"
+      enum:
+      - "Camera"
+      - "Gallery"
+      - "CameraGallery"
+      type: "string"
     PostalAddress:
       description: "Object representing a mailing address"
       properties:
@@ -4278,6 +4691,19 @@ components:
             type: "string"
         type: "object"
       description: "Queue routing based configuration details."
+    ReactionActionPayload:
+      allOf:
+      - $ref: "#/components/schemas/AbstractActionPayload"
+      - properties:
+          uniCodeChar:
+            type: "string"
+        required:
+        - "uniCodeChar"
+        type: "object"
+    ReadActionPayload:
+      allOf:
+      - $ref: "#/components/schemas/AbstractActionPayload"
+      description: "A Read action payload"
     Recipient:
       description: "A Recipient"
       properties:
@@ -4394,6 +4820,10 @@ components:
       - "statusRaw"
       - "createdTimestamp"
       type: "object"
+    RequestContactInfoAction:
+      allOf:
+      - $ref: "#/components/schemas/AbstractAction"
+      description: "An action that requests the recipient's contact information (e.g. phone number) via a tap on the button. The button label is carried by the inherited 'label' property."
     ResultError:
       properties:
         errorCode:
@@ -4513,6 +4943,9 @@ components:
           skipRouterCPRemovalIfNoRoutingFailures:
             description: "Indicates whether the router CP removal should be skipped if there are no routing failures"
             type: "boolean"
+          workId:
+            description: "Work SFDC record ID"
+            type: "string"
           workOwnerId:
             description: "The SFDC Id of user who is requesting cancellation"
             type: "string"
@@ -4533,6 +4966,10 @@ components:
       allOf:
       - $ref: "#/components/schemas/AbstractEntry"
       - properties:
+          acknowledgeTime:
+            description: "Time when the bot acknowledged the work"
+            format: "int64"
+            type: "integer"
           agentGroupIds:
             description: "GroupId for the assigned agent"
             items:
@@ -4544,11 +4981,21 @@ components:
           botId:
             description: "Bot assigned work"
             type: "string"
+          botType:
+            description: "Type of bot handling the work"
+            type: "string"
           errorMessages:
             description: "Error occurred while routing the work"
             items:
               type: "string"
             type: "array"
+          failedTime:
+            description: "Time when the work was failed"
+            format: "int64"
+            type: "integer"
+          isDirectWork:
+            description: "Whether the work was routed directly to a bot without PSR or WorkAssigned"
+            type: "boolean"
           queueId:
             description: "Queue assigned work"
             type: "string"
@@ -4565,7 +5012,6 @@ components:
             $ref: "#/components/schemas/RoutingWorkType"
             description: "Work event type"
         required:
-        - "conversationId"
         - "workId"
         - "workTargetId"
         - "workType"
@@ -4575,15 +5021,29 @@ components:
     RoutingWorkType:
       description: "work event type"
       enum:
+      - "Acknowledged"
       - "Assigned"
       - "Accepted"
       - "Cancelled"
       - "Closed"
       - "Declined"
       - "Escalated"
+      - "Failed"
       - "TransferError"
       - "Transferred"
       type: "string"
+    SdrActionPayload:
+      allOf:
+      - $ref: "#/components/schemas/AbstractActionPayload"
+      - properties:
+          relatedRecord:
+            items:
+              type: "string"
+            minItems: 1
+            type: "array"
+        required:
+        - "relatedRecord"
+        type: "object"
     SectionElement:
       anyOf:
       - required:
@@ -4829,6 +5289,9 @@ components:
           conversationIdentifier:
             description: "Conversation Identifier"
             type: "string"
+          isSurveyPending:
+            description: "True when a conversational survey will follow up for this session (the session is eligible and the channel has a survey associated)."
+            type: "boolean"
           sessionEndTime:
             description: "Start epoch timestamp for session end time"
             example: "1573503300"
@@ -4859,6 +5322,10 @@ components:
         - "sessionStartTime"
         type: "object"
       description: "A session status changed"
+    ShareLocationAction:
+      allOf:
+      - $ref: "#/components/schemas/AbstractAction"
+      description: "An action that requests the user's current location."
     ShippingMethodType:
       description: "The type of shipping method."
       enum:
@@ -5068,6 +5535,16 @@ components:
         - "links"
         type: "object"
       description: "A list of web links."
+    StaticContentLocation:
+      allOf:
+      - $ref: "#/components/schemas/AbstractStaticContent"
+      - properties:
+          location:
+            $ref: "#/components/schemas/AbstractLocationItem"
+        required:
+        - "location"
+        type: "object"
+      description: "A geographic location with coordinates."
     StaticContentMedia:
       allOf:
       - $ref: "#/components/schemas/AbstractStaticContent"
@@ -5232,6 +5709,36 @@ components:
         - "value"
         type: "object"
       description: "A value containing an arbitrary JSON object"
+    SurveyChoicesMessage:
+      allOf:
+      - $ref: "#/components/schemas/AbstractSurveyMessage"
+      - properties:
+          choices:
+            $ref: "#/components/schemas/AbstractChoices"
+        required:
+        - "choices"
+        type: "object"
+      description: "MT survey message with choices (QuickReplies, Buttons, ListPicker, etc.)"
+    SurveyChoicesResponseMessage:
+      allOf:
+      - $ref: "#/components/schemas/AbstractMessage"
+      - properties:
+          choicesResponse:
+            $ref: "#/components/schemas/AbstractChoicesResponse"
+        required:
+        - "choicesResponse"
+        type: "object"
+      description: "MO response to a survey choices message. Linked to the original survey via inReplyToMessageId."
+    SurveyStaticContentMessage:
+      allOf:
+      - $ref: "#/components/schemas/AbstractSurveyMessage"
+      - properties:
+          staticContent:
+            $ref: "#/components/schemas/AbstractStaticContent"
+        required:
+        - "staticContent"
+        type: "object"
+      description: "MT survey message with static content (e.g. survey link, thank you message)."
     SwitchCase:
       description: "A single case in a switch statement with its value and components"
       properties:
@@ -5275,6 +5782,7 @@ components:
       - "LinkTemplateSection"
       - "PromotionalOfferTemplateSection"
       - "OrderStatusTemplateSection"
+      - "AuthenticationTemplateSection"
       example: "HeaderTemplateSection"
       type: "string"
     Text:
@@ -5547,6 +6055,46 @@ components:
         required:
         - "videoId"
         type: "object"
+    TranslationActionPayload:
+      allOf:
+      - $ref: "#/components/schemas/AbstractActionPayload"
+      - properties:
+          content:
+            description: "The translated or original text being recorded. For outbound translations (agent typed in source language), this is the agent's original text. For inbound translations (end user sent in source language), this is the translated text the agent sees."
+            type: "string"
+          provider:
+            description: "Translation engine (e.g. - AWS)."
+            type: "string"
+          sourceLocale:
+            description: "Locale of the source text (BCP 47, e.g. \"es\", \"fr-CA\")"
+            type: "string"
+          structuredContent:
+            description: "Translated structured content. Null for simple text."
+            type: "object"
+          targetLocale:
+            description: "Locale the text was translated to"
+            type: "string"
+          terminologyFileApplied:
+            description: "Whether terminology file was configured at translation time."
+            type: "boolean"
+          terminologyFileName:
+            description: "Terminology resource name. Omitted when no terminology configured."
+            type: "string"
+          translationDirection:
+            $ref: "#/components/schemas/TranslationDirection"
+        required:
+        - "sourceLocale"
+        - "targetLocale"
+        - "translationDirection"
+        - "provider"
+        type: "object"
+      description: "Records translation context for a conversation entry. Carries metadata indicating the source locale, target locale, and content in one of those locales depending on direction (inbound or outbound translation)."
+    TranslationDirection:
+      description: "Direction of translation relative to the conversation action"
+      enum:
+      - "OUTBOUND"
+      - "INBOUND"
+      type: "string"
     UniqueId:
       description: "A UUID that identifies objects or items uniquely per message instance"
       example: "cbd4e3fe-f210-43b8-a4b7-dd77e39ee5e1"
@@ -5555,6 +6103,15 @@ components:
       description: "An string identifier that identifies objects or items uniquely per message instance"
       example: "7c4cce61-df7a-4a5b-a949-3d6e3ea278b5"
       type: "string"
+    UpdateDataFormAction:
+      allOf:
+      - $ref: "#/components/schemas/AbstractFormAction"
+      - properties:
+          payload:
+            description: "JSON-encoded string containing static key-value pairs to write into the current screen's data. Keys match screen data field names. Values are literal primitives, arrays, or objects — runtime form/data references are not supported. The downstream service translates this into the provider's native payload."
+            type: "string"
+        type: "object"
+      description: "An action that updates current screen state with pre-computed static values without calling the endpoint"
     Url:
       description: "A url"
       type: "string"
@@ -5598,6 +6155,20 @@ components:
       allOf:
       - $ref: "#/components/schemas/AbstractAsset"
       description: "A video asset of a message."
+    ViewLocationAction:
+      allOf:
+      - $ref: "#/components/schemas/AbstractAction"
+      - properties:
+          location:
+            $ref: "#/components/schemas/AbstractLocationItem"
+          query:
+            description: "Optional free-form query used when the channel supports a search-based map lookup instead of raw coordinates."
+            maxLength: 1000
+            type: "string"
+        required:
+        - "location"
+        type: "object"
+      description: "An action that opens a map at the given location."
     VisibilityStrategy:
       description: "Enum listing unique visibility strategies for entries."
       enum:
